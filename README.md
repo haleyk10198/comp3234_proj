@@ -1,2 +1,3 @@
 # comp3402_proj
-Henry and Haley's comp3402 group project repo
+Henry and Haley's comp3234 group project repo
+BTW, we need to make a gd poke message

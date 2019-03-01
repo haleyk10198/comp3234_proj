@@ -15,8 +15,6 @@ import socket
 # Global variables
 #
 
-
-
 #
 # This is the hash function for generating a unique
 # Hash ID for each peer.
@@ -26,11 +24,13 @@ import socket
 # and str(Port) to form a string that be the input 
 # to this hash function
 #
+
+
 def sdbm_hash(instr):
-	hash = 0
+	hash_value = 0
 	for c in instr:
-		hash = int(ord(c)) + (hash << 6) + (hash << 16) - hash
-	return hash & 0xffffffffffffffff
+		hash_value = int(ord(c)) + (hash_value << 6) + (hash_value << 16) - hash_value
+	return hash_value & 0xffffffffffffffff
 
 
 #
@@ -70,7 +70,7 @@ def do_Quit():
 win = Tk()
 win.title("MyP2PChat")
 
-#Top Frame for Message display
+# Top Frame for Message display
 topframe = Frame(win, relief=RAISED, borderwidth=1)
 topframe.pack(fill=BOTH, expand=True)
 topscroll = Scrollbar(topframe)
@@ -80,29 +80,29 @@ topscroll.pack(side=RIGHT, fill=Y, expand=True)
 MsgWin.config(yscrollcommand=topscroll.set)
 topscroll.config(command=MsgWin.yview)
 
-#Top Middle Frame for buttons
+# Top Middle Frame for buttons
 topmidframe = Frame(win, relief=RAISED, borderwidth=1)
 topmidframe.pack(fill=X, expand=True)
 Butt01 = Button(topmidframe, width='6', relief=RAISED, text="User", command=do_User)
-Butt01.pack(side=LEFT, padx=8, pady=8);
+Butt01.pack(side=LEFT, padx=8, pady=8)
 Butt02 = Button(topmidframe, width='6', relief=RAISED, text="List", command=do_List)
-Butt02.pack(side=LEFT, padx=8, pady=8);
+Butt02.pack(side=LEFT, padx=8, pady=8)
 Butt03 = Button(topmidframe, width='6', relief=RAISED, text="Join", command=do_Join)
-Butt03.pack(side=LEFT, padx=8, pady=8);
+Butt03.pack(side=LEFT, padx=8, pady=8)
 Butt04 = Button(topmidframe, width='6', relief=RAISED, text="Send", command=do_Send)
-Butt04.pack(side=LEFT, padx=8, pady=8);
+Butt04.pack(side=LEFT, padx=8, pady=8)
 Butt06 = Button(topmidframe, width='6', relief=RAISED, text="Poke", command=do_Poke)
-Butt06.pack(side=LEFT, padx=8, pady=8);
+Butt06.pack(side=LEFT, padx=8, pady=8)
 Butt05 = Button(topmidframe, width='6', relief=RAISED, text="Quit", command=do_Quit)
-Butt05.pack(side=LEFT, padx=8, pady=8);
+Butt05.pack(side=LEFT, padx=8, pady=8)
 
-#Lower Middle Frame for User input
+# Lower Middle Frame for User input
 lowmidframe = Frame(win, relief=RAISED, borderwidth=1)
 lowmidframe.pack(fill=X, expand=True)
 userentry = Entry(lowmidframe, fg="blue")
 userentry.pack(fill=X, padx=4, pady=4, expand=True)
 
-#Bottom Frame for displaying action info
+# Bottom Frame for displaying action info
 bottframe = Frame(win, relief=RAISED, borderwidth=1)
 bottframe.pack(fill=BOTH, expand=True)
 bottscroll = Scrollbar(bottframe)
@@ -112,6 +112,7 @@ bottscroll.pack(side=RIGHT, fill=Y, expand=True)
 CmdWin.config(yscrollcommand=bottscroll.set)
 bottscroll.config(command=CmdWin.yview)
 
+
 def main():
 	if len(sys.argv) != 4:
 		print("P2PChat.py <server address> <server port no.> <my port no.>")
@@ -119,6 +120,6 @@ def main():
 
 	win.mainloop()
 
+
 if __name__ == "__main__":
 	main()
-

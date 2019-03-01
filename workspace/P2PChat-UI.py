@@ -15,6 +15,10 @@ import socket
 # Global variables
 #
 
+username = ''
+peer_sck = socket.socket()
+server_sck = socket.socket()
+
 #
 # This is the hash function for generating a unique
 # Hash ID for each peer.
@@ -37,14 +41,64 @@ def sdbm_hash(instr):
 # Functions to handle user input
 #
 
+def validate_username(user):
+
+	# rejects:
+	# empty username
+	# username with ':'
+
+	if len(user) == 0:
+		return False
+	if user.find(':') != -1:
+		return False
+
+	return True
+
+
 def do_User():
-	outstr = "\n[User] username: "+userentry.get()
+
+	# Must be executed to set username before joining any group
+	# This function is only available before any successful joins
+
+	global username
+
+	input_str = userentry.get()
+
+	# insert check join condition here
+
+	if validate_username(username) == false:
+		outstr = "\nUser name must not contain \':\'!"
+	else:
+		outstr = "\n[User] username: "+input_str
+		username = input_str
+		userentry.delete(0, END)
+
 	CmdWin.insert(1.0, outstr)
-	userentry.delete(0, END)
+
+def get_list(msg):
+	chatroom_list = msg.split(':')[1:-2]
+	return chatroom_list
 
 
 def do_List():
 	CmdWin.insert(1.0, "\nPress List")
+
+	try:
+		server_sck.sendall('L::\r\n'.encode('utf-8'))
+	except socket.error as err:
+		pass
+
+	return_msg = server_sck.recv(1000)
+	chatroom_list = get_list(return_msg)
+
+	output_str = ''
+	if len(chatroom_list) == 0:
+		output_str = '\nNo active chatrooms'
+	else:
+		output_str = '\nHere are the active chatrooms:'
+		for chatroom in chatroom_list:
+			output_str += '\n\t'+chatroom
+	CmdWin.insert(1.0, output_str)
 
 
 def do_Join():
@@ -117,6 +171,13 @@ def main():
 	if len(sys.argv) != 4:
 		print("P2PChat.py <server address> <server port no.> <my port no.>")
 		sys.exit(2)
+
+	try:
+		server_sck.connect((sys.argv[1], int(sys.argv[2])))
+	except socket.err as err:
+		print("Cannot connect to room server at '{}:{}'".format(sys.argv, sys.argv[2]))
+		print('Error message: ', err)
+		return
 
 	win.mainloop()
 

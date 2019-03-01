@@ -41,15 +41,15 @@ def sdbm_hash(instr):
 # Functions to handle user input
 #
 
-def validate_username(user):
+def validate_name(name):
 
 	# rejects:
-	# empty username
-	# username with ':'
+	# empty name
+	# name with ':'
 
-	if len(user) == 0:
+	if len(name) == 0:
 		return False
-	if user.find(':') != -1:
+	if name.find(':') != -1:
 		return False
 
 	return True
@@ -66,14 +66,15 @@ def do_User():
 
 	# insert check join condition here
 
-	if validate_username(username) == false:
-		outstr = "\nUser name must not contain \':\'!"
+	if not validate_name(username):
+		outstr = "\nInvalid input!"
 	else:
 		outstr = "\n[User] username: "+input_str
 		username = input_str
 		userentry.delete(0, END)
 
 	CmdWin.insert(1.0, outstr)
+
 
 def get_list(msg):
 	chatroom_list = msg.split(':')[1:-2]
@@ -88,21 +89,34 @@ def do_List():
 	except socket.error as err:
 		pass
 
-	return_msg = server_sck.recv(1000)
-	chatroom_list = get_list(return_msg)
+	return_msg = server_sck.recv(1000).decode('utf-8')
 
-	output_str = ''
-	if len(chatroom_list) == 0:
-		output_str = '\nNo active chatrooms'
+	if return_msg[0] == 'F':
+		output_str = '\nEncountered error:\n'+return_msg.split(':')[1]
 	else:
-		output_str = '\nHere are the active chatrooms:'
-		for chatroom in chatroom_list:
-			output_str += '\n\t'+chatroom
+		chatroom_list = get_list(return_msg)
+
+		if len(chatroom_list) == 0:
+			output_str = '\nNo active chatrooms'
+		else:
+			output_str = '\nHere are the active chatrooms:'
+			for chatroom in chatroom_list:
+				output_str += '\n\t'+chatroom
+
 	CmdWin.insert(1.0, output_str)
 
 
 def do_Join():
 	CmdWin.insert(1.0, "\nPress JOIN")
+
+	input_str = userentry.get()
+	if not validate_name(input_str):
+		output_str = '\nInvalid input!'
+	else:
+		userentry.delete(0, END)
+		pass
+
+	CmdWin.insert(1.0, output_str)
 
 
 def do_Send():
@@ -174,7 +188,7 @@ def main():
 
 	try:
 		server_sck.connect((sys.argv[1], int(sys.argv[2])))
-	except socket.err as err:
+	except socket.error as err:
 		print("Cannot connect to room server at '{}:{}'".format(sys.argv, sys.argv[2]))
 		print('Error message: ', err)
 		return

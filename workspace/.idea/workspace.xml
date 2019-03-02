@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27592385-9b97-4150-930a-9e36523c9dbc" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/haleyk.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/haleyk.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/P2PChat-UI.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="173" column="32" selection-start-line="173" selection-start-column="32" selection-end-line="173" selection-end-column="32" />
+            <state relative-caret-position="250">
+              <caret line="161" column="8" selection-start-line="161" selection-start-column="8" selection-end-line="161" selection-end-column="8" />
               <folding>
                 <element signature="e#123#144#0" expanded="true" />
               </folding>
@@ -95,12 +92,12 @@
       <workItem from="1551415238692" duration="163000" />
       <workItem from="1551415752033" duration="3683000" />
       <workItem from="1551422059770" duration="1867000" />
-      <workItem from="1551540772811" duration="5326000" />
+      <workItem from="1551540772811" duration="5394000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11039000" />
+    <option name="totallyTimeSpent" value="11107000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -136,8 +133,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="173" column="32" selection-start-line="173" selection-start-column="32" selection-end-line="173" selection-end-column="32" />
+        <state relative-caret-position="250">
+          <caret line="161" column="8" selection-start-line="161" selection-start-column="8" selection-end-line="161" selection-end-column="8" />
           <folding>
             <element signature="e#123#144#0" expanded="true" />
           </folding>

@@ -158,7 +158,8 @@ def do_Join():
 		userentry.delete(0, END)
 		server_sck.sendall(
 			"J:{}:{}:{}:{}::\r\n".format(input_str, username, server_sck.gethostname(), sys.argv[3]).encode('utf-8'))
-		return_msg = server_sck.recv(1000)
+		return_msg = server_sck.recv(1000).decode('utf-8')
+		
 		if len(return_msg) == 0:
 			reconnect_server()
 		elif return_msg[0] == 'F':

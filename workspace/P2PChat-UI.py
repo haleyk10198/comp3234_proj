@@ -1,11 +1,17 @@
 #!/usr/bin/python3
 
-# Student name and No.:
+# Student name and No.: Kwok Kin Hei (3035 371 587)
 # Student name and No.:
 # Development platform:
-# Python version:
+# Python version: 3.7
 # Version:
 
+
+# Stage 1 check list:
+# do_User()
+# do_List()
+# do_Join()
+# do_Poke()
 
 from tkinter import *
 import sys
@@ -16,8 +22,12 @@ import socket
 #
 
 username = ''
+chatroom_name = ''
 peer_sck = socket.socket()
 server_sck = socket.socket()
+
+MSID = -1
+user_list = []
 
 #
 # This is the hash function for generating a unique
@@ -37,11 +47,27 @@ def sdbm_hash(instr):
 	return hash_value & 0xffffffffffffffff
 
 
+def reconnect_server():
+	CmdWin.insert(1.0, '\nConnection lost! attempting to reconnect ...')
+	connect_server()
+
+
+def connect_server():
+	try:
+		server_sck.connect((sys.argv[1], int(sys.argv[2])))
+	except socket.error as err:
+		print("Cannot connect to room server at '{}:{}'".format(sys.argv, sys.argv[2]))
+		print('Error message: ', err)
+		sys.exit(0)
+
 #
 # Functions to handle user input
 #
 
+
 def validate_name(name):
+
+	# validates user input names (eg: chatroom name, username)
 
 	# rejects:
 	# empty name
@@ -66,8 +92,8 @@ def do_User():
 
 	# insert check join condition here
 
-	if not validate_name(username):
-		outstr = "\nInvalid input!"
+	if not validate_name(input_str):
+		outstr = "\n\'{}\' is an invalid username!".format(input_str)
 	else:
 		outstr = "\n[User] username: "+input_str
 		username = input_str
@@ -76,7 +102,8 @@ def do_User():
 	CmdWin.insert(1.0, outstr)
 
 
-def get_list(msg):
+def parse_semicolon_list(msg):
+	# parse a ':' separated message into a list
 	chatroom_list = msg.split(':')[1:-2]
 	return chatroom_list
 
@@ -91,10 +118,13 @@ def do_List():
 
 	return_msg = server_sck.recv(1000).decode('utf-8')
 
-	if return_msg[0] == 'F':
+	if len(return_msg) == 0:
+		reconnect_server()
+		return
+	elif return_msg[0] == 'F':
 		output_str = '\nEncountered error:\n'+return_msg.split(':')[1]
 	else:
-		chatroom_list = get_list(return_msg)
+		chatroom_list = parse_semicolon_list(return_msg)
 
 		if len(chatroom_list) == 0:
 			output_str = '\nNo active chatrooms'
@@ -107,14 +137,41 @@ def do_List():
 
 
 def do_Join():
+
+	global MSID, user_list, chatroom_name
+
 	CmdWin.insert(1.0, "\nPress JOIN")
+	output_str = ''
+
+	if not username:
+		CmdWin.insert(1.0, '\nPlease input your username first!')
+		return
+
+	if chatroom_name:
+		CmdWin.insert(1.0, '\nYou have already joined a chatroom!')
+		return
 
 	input_str = userentry.get()
 	if not validate_name(input_str):
-		output_str = '\nInvalid input!'
+		output_str = "\n\'{}\' is an invalid chatroom name!".format(input_str)
 	else:
 		userentry.delete(0, END)
-		pass
+		server_sck.sendall(
+			"J:{}:{}:{}:{}::\r\n".format(input_str, username, server_sck.gethostname(), sys.argv[3]).encode('utf-8'))
+		return_msg = server_sck.recv(1000)
+		if len(return_msg) == 0:
+			reconnect_server()
+		elif return_msg[0] == 'F':
+			output_str = '\nEncountered error:\n' + return_msg.split(':')[1]
+		else:
+			info_list = parse_semicolon_list(return_msg)
+			MSID = info_list[0]
+			user_list = [(info_list[i], info_list[i+1], info_list[i+2]) for i in range(1, len(info_list-1), 3)]
+			chatroom_name = input_str
+
+			# setup thread for executing keepalive
+
+			# setup peer network
 
 	CmdWin.insert(1.0, output_str)
 
@@ -186,12 +243,7 @@ def main():
 		print("P2PChat.py <server address> <server port no.> <my port no.>")
 		sys.exit(2)
 
-	try:
-		server_sck.connect((sys.argv[1], int(sys.argv[2])))
-	except socket.error as err:
-		print("Cannot connect to room server at '{}:{}'".format(sys.argv, sys.argv[2]))
-		print('Error message: ', err)
-		return
+	connect_server()
 
 	win.mainloop()
 

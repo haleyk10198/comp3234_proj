@@ -17,6 +17,7 @@ from tkinter import *
 import sys
 import socket
 import threading
+import time
 
 
 class User:
@@ -25,7 +26,15 @@ class User:
         self.addr = addr
         self.port = port
         self.hash = sdbm_hash(self.name + self.addr + self.port)
-        self.msgID = -1
+        self.msgID = 0
+        self.fwd = False
+        self.bwd = False
+
+    def get_msgID(self):
+        return self.msgID
+
+    def set_msgID(self, msgID):
+        self.msgID = msgID
 
     def update_hash(self):
         self.hash = sdbm_hash(self.name + self.addr + self.port)
@@ -54,6 +63,29 @@ class User:
     def get_hash(self):
         return self.hash
 
+    def declare_bwd(self):
+        # This is irreversible
+        self.bwd = True
+
+    def declare_fwd(self):
+        # This is irreversible
+        self.fwd = True
+
+
+class UserList:
+    def __init__(self):
+        self.users = []
+
+    def add_user(self, user):
+        if user.hash not in list(filter(lambda u: u.hash, self.users)):
+            self.users.append(user)
+
+    def length(self):
+        return len(self.users)
+
+    def get_element(self, i):
+        return self.users[i]
+
 #
 # Global variables
 #
@@ -64,8 +96,6 @@ chatroom_name = ''
 peer_fwd_sck = socket.socket()
 peer_bwd_sck = socket.socket()
 server_sck = socket.socket()
-
-bck_links = []
 
 MSID = -1
 user_list = []
@@ -90,8 +120,8 @@ def sdbm_hash(instr):
 
 def update_members(instr):
     global user_list
-    user_list = [User(instr[i], instr[i + 1], instr[i + 2]) for i in range(0, len(instr), 3)] + [me]
-    user_list.sort(key=lambda user: user.get_hash)
+    for i in range(0, len(instr), 3):
+        user_list.add_user(instr[i], instr[i + 1], instr[i + 2])
 
 
 def reconnect_server():
@@ -116,19 +146,40 @@ def is_connected(sck):
         return False
 
 
-def handshake(sck):
-    pass
-
-
 def select_peer():
-    global user_list, me
+    global user_list, me, chatroom_name
 
-    my_id = user_list.index(me)
+    while True:
+        my_id = user_list.index(me)
 
-    for delta in range(1, len(user_list)):
-        start = (my_id + delta) % len(user_list)
-        pass
-    # TODO
+        for delta in range(1, user_list.length()):
+            start = (my_id + delta) % user_list.length()
+            peer = user_list.get_element(start)
+
+            if peer.bwd:
+                continue
+            else:
+                try:
+                    peer_fwd_sck.connect((peer.addr, peer.port))
+                    peer_fwd_sck.sendall("P:{}:{}:{}:{}:{}::\r\n".format(
+                        chatroom_name, me.get_name(), me.get_addr(), me.get_port(), me.get_msgID()
+                    ).encode('utf-8'))
+                    return_msg = peer.recv(1000).decode('utf-8')
+
+                    if len(return_msg) == 0:
+                        peer_fwd_sck.close()
+                        continue
+                    else:
+                        peer.set_msgID(parse_semicolon_list(return_msg[1]))
+                        peer.fwd = True
+                        break
+
+                except socket.error:
+                    continue
+        else:
+            time.sleep(10)
+            continue
+        break
 
 
 #
@@ -137,6 +188,7 @@ def select_peer():
 
 
 def validate_name(name):
+
     # validates user input names (eg: chatroom name, username)
 
     # rejects:
@@ -152,6 +204,7 @@ def validate_name(name):
 
 
 def do_User():
+
     # Must be executed to set username before joining any group
     # This function is only available before any successful joins
 
@@ -178,6 +231,7 @@ def parse_semicolon_list(msg):
 
 
 def do_List():
+
     global server_sck
 
     CmdWin.insert(1.0, "\nPress List")
@@ -318,6 +372,7 @@ def main():
 
     me.set_addr(socket.gethostname())
     me.set_addr(sys.argv[3])
+    user_list.add_user(me)
     connect_server()
     # add the thread to listen backwards
     win.mainloop()

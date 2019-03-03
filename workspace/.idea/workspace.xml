@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27592385-9b97-4150-930a-9e36523c9dbc" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/User.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/haleyk.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/haleyk.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/P2PChat-UI.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,16 +19,23 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="250">
-              <caret line="161" column="8" selection-start-line="161" selection-start-column="8" selection-end-line="161" selection-end-column="8" />
+            <state relative-caret-position="299">
+              <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
               <folding>
-                <element signature="e#123#144#0" expanded="true" />
+                <element signature="e#226#247#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
@@ -34,6 +45,14 @@
       <find>.sendall(</find>
       <find>server_sck</find>
       <find>return</find>
+      <find>except</find>
+      <find>gethostname</find>
+      <find>myhashI</find>
+      <find>sys.argv[3</find>
+      <find>select_</find>
+      <find>user</find>
+      <find>user_list</find>
+      <find>set_po</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -42,14 +61,16 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/User.py" />
         <option value="$PROJECT_DIR$/P2PChat-UI.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="953" />
-    <option name="width" value="974" />
-    <option name="height" value="527" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -92,18 +113,21 @@
       <workItem from="1551415238692" duration="163000" />
       <workItem from="1551415752033" duration="3683000" />
       <workItem from="1551422059770" duration="1867000" />
-      <workItem from="1551540772811" duration="5394000" />
+      <workItem from="1551540772811" duration="5412000" />
+      <workItem from="1551599209560" duration="1091000" />
+      <workItem from="1551605947328" duration="1084000" />
+      <workItem from="1551608230095" duration="2326000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11107000" />
+    <option name="totallyTimeSpent" value="15626000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12953092" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.28008753" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -116,8 +140,8 @@
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
-      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.3253796" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5010941" side_tool="true" weight="0.32858709" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4989059" visible="true" weight="0.3253796" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.3264642" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -131,12 +155,19 @@
     <option name="version" value="1" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/User.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="13" column="26" lean-forward="true" selection-start-line="13" selection-start-column="26" selection-end-line="13" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="161" column="8" selection-start-line="161" selection-start-column="8" selection-end-line="161" selection-end-column="8" />
+        <state relative-caret-position="299">
+          <caret line="60" lean-forward="true" selection-start-line="60" selection-end-line="60" />
           <folding>
-            <element signature="e#123#144#0" expanded="true" />
+            <element signature="e#226#247#0" expanded="true" />
           </folding>
         </state>
       </provider>

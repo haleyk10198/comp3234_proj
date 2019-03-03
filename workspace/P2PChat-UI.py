@@ -20,12 +20,29 @@ import threading
 import time
 
 
+#
+# This is the hash function for generating a unique
+# Hash ID for each peer.
+# Source: http://www.cse.yorku.ca/~oz/hash.html
+#
+# Concatenate the peer's username, str(IP address),
+# and str(Port) to form a string that be the input
+# to this hash function
+#
+
+
+def sdbm_hash(instr):
+    hash_value = 0
+    for c in instr:
+        hash_value = int(ord(c)) + (hash_value << 6) + (hash_value << 16) - hash_value
+    return hash_value & 0xffffffffffffffff
+
+
 class User:
     def __init__(self, name='', addr='0', port='0'):
         self.name = name
         self.addr = addr
         self.port = port
-        self.hash = sdbm_hash(self.name + self.addr + self.port)
         self.msgID = 0
         self.fwd = False
         self.bwd = False
@@ -36,55 +53,87 @@ class User:
     def set_msgID(self, msgID):
         self.msgID = msgID
 
-    def update_hash(self):
-        self.hash = sdbm_hash(self.name + self.addr + self.port)
+    @property
+    def hash(self):
+        return sdbm_hash(self.name + self.addr + self.port)
 
     def set_name(self, name):
         self.name = name
-        self.update_hash()
 
     def get_name(self):
         return self.name
 
     def set_addr(self, addr):
         self.addr = addr
-        self.update_hash()
 
     def get_addr(self):
         return self.addr
 
     def set_port(self, port):
         self.port = port
-        self.update_hash()
 
     def get_port(self):
         return self.port
 
-    def get_hash(self):
-        return self.hash
+    # TODO: Lock declare_bwd and declare_fwd to ensure bwd == fwd == 1 never happens
 
     def declare_bwd(self):
         # This is irreversible
-        self.bwd = True
+        if not self.fwd:
+            self.bwd = True
+        return self.bwd
 
     def declare_fwd(self):
         # This is irreversible
-        self.fwd = True
+        if not self.bwd:
+            self.fwd = True
+        return self.fwd
+
+    def is_fwd(self):
+        return self.fwd
+
+    def is_bwd(self):
+        return self.bwd
 
 
 class UserList:
     def __init__(self):
         self.users = []
+        self.fwd_count = 0
+        self.bwd_count = 0
+        self.hash = -1
 
     def add_user(self, user):
-        if user.hash not in list(filter(lambda u: u.hash, self.users)):
+        if user.hash not in [u.hash for u in self.users]:
             self.users.append(user)
 
+    @property
     def length(self):
         return len(self.users)
 
     def get_element(self, i):
         return self.users[i]
+
+    def declare_fwd(self, i):
+        if self.fwd_count == 0:
+            if self.users[i].declare_fwd():
+                self.fwd_count += 1
+                return True
+        return False
+
+    def get_hash(self):
+        return self.hash
+
+    def set_hash(self, hash):
+        self.hash = hash
+
+    def index(self, u):
+        try:
+            ret = self.users.index(u)
+        except ValueError:
+            ret = -1
+        finally:
+            return ret
 
 #
 # Global variables
@@ -97,31 +146,15 @@ peer_fwd_sck = socket.socket()
 peer_bwd_sck = socket.socket()
 server_sck = socket.socket()
 
-MSID = -1
-user_list = []
+user_list = UserList()
 
-#
-# This is the hash function for generating a unique
-# Hash ID for each peer.
-# Source: http://www.cse.yorku.ca/~oz/hash.html
-#
-# Concatenate the peer's username, str(IP address), 
-# and str(Port) to form a string that be the input 
-# to this hash function
-#
-
-
-def sdbm_hash(instr):
-    hash_value = 0
-    for c in instr:
-        hash_value = int(ord(c)) + (hash_value << 6) + (hash_value << 16) - hash_value
-    return hash_value & 0xffffffffffffffff
+CONNECTED = False
 
 
 def update_members(instr):
     global user_list
     for i in range(0, len(instr), 3):
-        user_list.add_user(instr[i], instr[i + 1], instr[i + 2])
+        user_list.add_user(User(instr[i], instr[i + 1], instr[i + 2]))
 
 
 def reconnect_server():
@@ -152,15 +185,15 @@ def select_peer():
     while True:
         my_id = user_list.index(me)
 
-        for delta in range(1, user_list.length()):
-            start = (my_id + delta) % user_list.length()
+        for delta in range(1, user_list.length):
+            start = (my_id + delta) % user_list.length
             peer = user_list.get_element(start)
 
             if peer.bwd:
                 continue
             else:
                 try:
-                    peer_fwd_sck.connect((peer.addr, peer.port))
+                    peer_fwd_sck.connect((peer.addr, int(peer.port)))
                     peer_fwd_sck.sendall("P:{}:{}:{}:{}:{}::\r\n".format(
                         chatroom_name, me.get_name(), me.get_addr(), me.get_port(), me.get_msgID()
                     ).encode('utf-8'))
@@ -171,8 +204,8 @@ def select_peer():
                         continue
                     else:
                         peer.set_msgID(parse_semicolon_list(return_msg[1]))
-                        peer.fwd = True
-                        break
+                        if user_list.declare_fwd(start):
+                            break
 
                 except socket.error:
                     continue
@@ -257,13 +290,44 @@ def do_List():
     CmdWin.insert(1.0, output_str)
 
 
+def try_join(roomname):
+    global me
+
+    server_sck.sendall(
+        "J:{}:{}:{}:{}::\r\n".format(roomname, me.get_name(), me.get_addr(), me.get_port()).encode('utf-8'))
+    return_msg = server_sck.recv(1000).decode('utf-8')
+
+    if len(return_msg) == 0:
+        reconnect_server()
+        return False
+    elif return_msg[0] == 'F':
+        CmdWin.insert(1.0, '\nEncountered error:\n' + return_msg.split(':')[1])
+        return False
+    else:
+        CmdWin.insert(1.0, '\nReceived membership ACK from server')
+        info_list = parse_semicolon_list(return_msg[1:-1])
+        user_list.set_hash(int(info_list[0]))
+        update_members(info_list[1:])
+        return True
+
+
+def keep_alive():
+    global chatroom_name
+
+    while True:
+        CmdWin.insert(1.0, '\nMaintaining chatroom membership with server...')
+        try_join(chatroom_name)
+
+        time.sleep(20)
+
+
 def do_Join():
-    global MSID, user_list, chatroom_name, me
+    global user_list, chatroom_name, me
 
     CmdWin.insert(1.0, "\nPress JOIN")
     output_str = ''
 
-    if not me.username:
+    if not me.get_name():
         CmdWin.insert(1.0, '\nPlease input your username first!')
         return
 
@@ -279,24 +343,19 @@ def do_Join():
         output_str = "\n\'{}\' is an invalid chatroom name!".format(input_str)
     else:
         userentry.delete(0, END)
-        server_sck.sendall(
-            "J:{}:{}:{}:{}::\r\n".format(input_str, me.username, me.addr, me.port).encode('utf-8'))
-        return_msg = server_sck.recv(1000).decode('utf-8')
-
-        if len(return_msg) == 0:
-            reconnect_server()
-        elif return_msg[0] == 'F':
-            output_str = '\nEncountered error:\n' + return_msg.split(':')[1]
-        else:
-            info_list = parse_semicolon_list(return_msg[1:-1])
-            MSID = int(info_list[0])
-            update_members(info_list[1:])
+        if try_join(input_str):
             chatroom_name = input_str
+            output_str = "\n You have successfully joined the chatroom \'{}\'!".format(chatroom_name)
+            output_str += "\nList of members:"
+
+            for i in range(0, user_list.length):
+                output_str += "\n\t{}".format(user_list.get_element(i).get_name())
 
             # setup thread for executing keepalive
+            threading.Thread(target=keep_alive).start()
 
             # setup peer network
-            threading.Thread(target=select_peer)
+            threading.Thread(target=select_peer).start()
 
     CmdWin.insert(1.0, output_str)
 

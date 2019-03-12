@@ -18,6 +18,7 @@ import sys
 import socket
 import threading
 import time
+from functools import reduce
 
 
 #
@@ -47,6 +48,13 @@ class User:
         self.fwd = False
         self.bwd = False
         self.fwd_bwd_semaphore = threading.Semaphore(1)
+        self.sck = None
+
+    def get_socket(self):
+        return self.sck
+
+    def set_socket(self, sck):
+        self.sck = sck
 
     def get_msgID(self):
         return self.msgID
@@ -78,28 +86,35 @@ class User:
 
     # DONE: Lock declare_bwd and declare_fwd to ensure bwd == fwd == 1 never happens
 
-    def declare_bwd(self):
+    def declare_bwd(self, sck):
 
         self.fwd_bwd_semaphore.acquire()
 
         # This is irreversible
         if not self.fwd:
             self.bwd = True  # target self
+            self.sck = sck
 
         bwd = self.bwd
+
+        print("[debug] Tried to build backward link w/ {}, status: {}"
+              .format(self.name, "Success" if bwd else "Failed"))
         self.fwd_bwd_semaphore.release()
 
         return bwd
 
-    def declare_fwd(self):
+    def declare_fwd(self, sck):
 
         self.fwd_bwd_semaphore.acquire()
 
         # This is irreversible
         if not self.bwd:
             self.fwd = True  # at most one
+            self.sck = sck
 
         fwd = self.fwd
+        print("[debug] Tried to build forward link w/ {}, status: {}"
+              .format(self.name, "Success" if fwd else "Failed"))
         self.fwd_bwd_semaphore.release()
 
         return fwd
@@ -113,25 +128,21 @@ class User:
 
 class UserList:
 
-    lock = threading.Semaphore(1)
-
     def __init__(self):
+        self.lock = threading.Semaphore(1)
         self.users = []
         self.fwd_count = 0  # at most one
-        self.bwd_count = 0
         self.hash = -1
 
     def add_user(self, user):
         if user.hash not in [u.hash for u in self.users]:
             self.users.append(user)
 
-    @staticmethod
-    def acquire_lock():
-        UserList.lock.acquire()
+    def acquire_lock(self):
+        self.lock.acquire()
 
-    @staticmethod
-    def release_lock():
-        UserList.lock.release()
+    def release_lock(self):
+        self.lock.release()
 
     @property
     def length(self):
@@ -140,16 +151,16 @@ class UserList:
     def get_element(self, i):
         return self.users[i]
 
-    def declare_fwd(self, i):  # at most one, return once success or fail
+    def declare_fwd(self, i, sck):  # at most one, return once success or fail
         if self.fwd_count == 0:
-            if self.users[i].declare_fwd():
+            if self.users[i].declare_fwd(sck):
                 self.fwd_count += 1
                 return True
         return False
 
-    def declare_bwd(self, i):
-        if self.users[i].declare_bwd():
-            self.bwd_count += 1
+    @property
+    def declare_bwd(self):
+        return reduce(lambda cnt, user: cnt+user.is_bwd(), self.users)
 
     def get_hash(self):
         return self.hash
@@ -159,10 +170,17 @@ class UserList:
 
     def index(self, u):
         for i in range(0, len(self.users)):
-            if self.users[i] == u:
+            if self.users[i].hash == u.hash:
                 return i
 
         return -1
+
+    def get_user(self, u):
+        for i in range(0, len(self.users)):
+            if self.users[i].hash == u.hash:
+                return self.users[i]
+
+        return None
 
 
 #
@@ -173,8 +191,8 @@ class UserList:
 me = User()
 # chat room name joined
 chatroom_name = ''
-# fwd socket
-peer_fwd_sck = socket.socket()
+# fwd socket, moved to user
+# peer_fwd_sck = socket.socket()
 # bwd socket
 bwd_sck = socket.socket()
 # server socket
@@ -193,10 +211,10 @@ def update_members(instr):
     global user_list
 
     # Locking user list during updates
-    UserList.acquire_lock()
+    user_list.acquire_lock()
     for i in range(0, len(instr), 3):
         user_list.add_user(User(instr[i], instr[i + 1], instr[i + 2]))
-    UserList.release_lock()
+    user_list.release_lock()
 
 
 # look the function below, return void
@@ -248,30 +266,29 @@ def bwd_handler(bwd_client_socket, addr):
     # For updating the chatroom member list
     try_join(chatroom_name)
 
-    id = user_list.index(User(message_contents[1], message_contents[2], message_contents[3]))
+    user = user_list.get_user(User(message_contents[1], message_contents[2], message_contents[3]))
     # Check if user exists in list
-    if id == -1:
+    if not user:
         bwd_client_socket.close()
         return
 
-    if user_list.get_element(id).declare_bwd(id):
-        print("[debug] Received handshake request from {}, but failed to declare it as backwards".
-              format(message_contents[1]))
+    if not user.declare_bwd(bwd_client_socket):
         bwd_client_socket.close()
         return
+    else:
+        # Handshaking procedures -----------------------------
 
-    # Handshaking procedures -----------------------------
+        # Print out bwd msg to command window
+        CmdWin.insert(1.0, "{} @ {} is now connected as your peer".format(message_contents[1], addr))
 
-    # Print out bwd msg to command window
-    CmdWin.insert(1.0, "A new backward link has come")
+        # Add this new bwd new user to socket_list
+        # peer_bwd_socket_list.append(bwd_client_socket)
+        # This is moved inside declare bwd
 
-    # Add this new bwd new user to socket_list
-    peer_bwd_socket_list.append(bwd_client_socket)
-
-    # Set new msgID by increment 1
-    me.set_msgID(me.get_msgID() + 1)
-    handshake_msg = "S:" + str(me.get_msgID()) + "::\r\n"
-    bwd_client_socket.send(handshake_msg.encode('utf-8'))
+        # Set new msgID by increment 1
+        me.set_msgID(me.get_msgID() + 1)
+        handshake_msg = "S:" + str(me.get_msgID()) + "::\r\n"
+        bwd_client_socket.sendall(handshake_msg.encode('utf-8'))
 
 
 # when self just join chat room, check for suitable fwd, then connect it
@@ -286,14 +303,20 @@ def select_peer():
 
     while True:
 
+        peer_fwd_sck = socket.socket()
+
+        user_list.acquire_lock()
         my_id = user_list.index(me)
 
         for delta in range(1, user_list.length):
             start = (my_id + delta) % user_list.length
             peer = user_list.get_element(start)
 
+            print("[debug] Engaging with {}".format(peer.name))
+
             if peer.bwd:
 
+                print("[debug] Already formed backward link w/ {}, cannot build forward link".format(peer.name))
                 continue
 
             else:
@@ -306,16 +329,20 @@ def select_peer():
                     return_msg = peer_fwd_sck.recv(1000).decode('utf-8')
 
                     if len(return_msg) == 0:
+
                         peer_fwd_sck.close()
                         continue
                     else:
                         peer.set_msgID(parse_semicolon_list(return_msg[1]))
-                        if user_list.declare_fwd(start):
+                        if user_list.declare_fwd(start, peer_fwd_sck):
                             break
 
-                except socket.error:
+                except socket.error as e:
+                    print("[debug] Encountered socket error in select_peer!")
+                    print(e)
                     continue
         else:
+            user_list.release_lock()
             time.sleep(10)
             continue
         break

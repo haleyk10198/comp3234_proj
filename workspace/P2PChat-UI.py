@@ -112,6 +112,7 @@ class User:
 
 
 class UserList:
+
     lock = threading.Semaphore(1)
 
     def __init__(self):
@@ -157,24 +158,11 @@ class UserList:
         self.hash = hash
 
     def index(self, u):
-        try:
-            ret = self.users.index(u)
-        except ValueError:
-            ret = -1
-        finally:
-            return ret
+        for i in range(0, len(self.users)):
+            if self.users[i] == u:
+                return i
 
-    def isUserExists(self, name, addr, port):
-
-        for i in range(self.length):
-            # CmdWin.insert(1.0, self.get_element(i).hash())
-            temp_user = self.get_element(i)
-
-            if sdbm_hash(temp_user.get_name() + temp_user.get_addr() + temp_user.get_port()) == sdbm_hash(name + addr + port):
-                self.get_element(i).declare_bwd()
-                return True
-
-        return False
+        return -1
 
 
 #
@@ -196,15 +184,19 @@ user_list = UserList()
 # bwd socket list
 peer_bwd_socket_list = list()
 
-# Connection status flag
-CONNECTED = False
+# Assume max no of bwd peers is 5
+MAX_BACKWARD_LINKS = 5
 
 
 # randomly triggered by server, if not exist, add user. if exist, do nothing. return void
 def update_members(instr):
     global user_list
+
+    # Locking user list during updates
+    UserList.acquire_lock()
     for i in range(0, len(instr), 3):
         user_list.add_user(User(instr[i], instr[i + 1], instr[i + 2]))
+    UserList.release_lock()
 
 
 # look the function below, return void
@@ -237,8 +229,7 @@ def bwd_listener():
     global bwd_sck
 
     bwd_sck.bind(('', int(me.get_port())))
-    # Assume max no of bwd peers is 1000
-    bwd_sck.listen(1000)
+    bwd_sck.listen(MAX_BACKWARD_LINKS)
 
     bwd_client_socket, addr = bwd_sck.accept()
 
@@ -246,7 +237,7 @@ def bwd_listener():
 
 
 def bwd_handler(bwd_client_socket, addr):
-    global chatroom_name, user_list, CONNECTED
+    global chatroom_name, user_list
 
     message = bwd_client_socket.recv(1000)
 
@@ -257,8 +248,15 @@ def bwd_handler(bwd_client_socket, addr):
     # For updating the chatroom member list
     try_join(chatroom_name)
 
+    id = user_list.index(User(message_contents[1], message_contents[2], message_contents[3]))
     # Check if user exists in list
-    if not user_list.isUserExists(message_contents[1], message_contents[2], message_contents[3]):
+    if id == -1:
+        bwd_client_socket.close()
+        return
+
+    if user_list.get_element(id).declare_bwd(id):
+        print("[debug] Received handshake request from {}, but failed to declare it as backwards".
+              format(message_contents[1]))
         bwd_client_socket.close()
         return
 
@@ -274,8 +272,6 @@ def bwd_handler(bwd_client_socket, addr):
     me.set_msgID(me.get_msgID() + 1)
     handshake_msg = "S:" + str(me.get_msgID()) + "::\r\n"
     bwd_client_socket.send(handshake_msg.encode('utf-8'))
-
-    CONNECTED = True
 
 
 # when self just join chat room, check for suitable fwd, then connect it
@@ -440,7 +436,7 @@ def keep_alive():
 
 
 def do_Join():
-    global user_list, chatroom_name, me
+    global user_list, chatroom_name, me, CONNECTED
 
     CmdWin.insert(1.0, "\nPress JOIN")
     output_str = ''

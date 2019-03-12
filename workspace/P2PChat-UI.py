@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# Student name and No.: Kwok Kin Hei (3035 371 587)
-# Student name and No.:
-# Development platform:
+# Student name and No.: Kwok Kin Hei (3035371587)
+# Student name and No.: Tse Tsz Hei (3035344479)
+# Development platform: Ubuntu Linux, Mac OS
 # Python version: 3.7
 # Version:
 
@@ -46,6 +46,7 @@ class User:
         self.msgID = 0
         self.fwd = False
         self.bwd = False
+        self.fwd_bwd_semaphore = threading.Semaphore(1)
 
     def get_msgID(self):
         return self.msgID
@@ -75,19 +76,33 @@ class User:
     def get_port(self):
         return self.port
 
-    # TODO: Lock declare_bwd and declare_fwd to ensure bwd == fwd == 1 never happens
+    # DONE: Lock declare_bwd and declare_fwd to ensure bwd == fwd == 1 never happens
 
     def declare_bwd(self):
+
+        self.fwd_bwd_semaphore.acquire()
+
         # This is irreversible
         if not self.fwd:
-            self.bwd = True
-        return self.bwd
+            self.bwd = True  # target self
+
+        bwd = self.bwd
+        self.fwd_bwd_semaphore.release()
+
+        return bwd
 
     def declare_fwd(self):
+
+        self.fwd_bwd_semaphore.acquire()
+
         # This is irreversible
         if not self.bwd:
-            self.fwd = True
-        return self.fwd
+            self.fwd = True  # at most one
+
+        fwd = self.fwd
+        self.fwd_bwd_semaphore.release()
+
+        return fwd
 
     def is_fwd(self):
         return self.fwd
@@ -97,15 +112,25 @@ class User:
 
 
 class UserList:
+    lock = threading.Semaphore(1)
+
     def __init__(self):
         self.users = []
-        self.fwd_count = 0
+        self.fwd_count = 0  # at most one
         self.bwd_count = 0
         self.hash = -1
 
     def add_user(self, user):
         if user.hash not in [u.hash for u in self.users]:
             self.users.append(user)
+
+    @staticmethod
+    def acquire_lock():
+        UserList.lock.acquire()
+
+    @staticmethod
+    def release_lock():
+        UserList.lock.release()
 
     @property
     def length(self):
@@ -114,12 +139,16 @@ class UserList:
     def get_element(self, i):
         return self.users[i]
 
-    def declare_fwd(self, i):
+    def declare_fwd(self, i):  # at most one, return once success or fail
         if self.fwd_count == 0:
             if self.users[i].declare_fwd():
                 self.fwd_count += 1
                 return True
         return False
+
+    def declare_bwd(self, i):
+        if self.users[i].declare_bwd():
+            self.bwd_count += 1
 
     def get_hash(self):
         return self.hash
@@ -135,33 +164,56 @@ class UserList:
         finally:
             return ret
 
+    def isUserExists(self, name, addr, port):
+
+        for i in range(self.length):
+            # CmdWin.insert(1.0, self.get_element(i).hash())
+            temp_user = self.get_element(i)
+
+            if sdbm_hash(temp_user.get_name() + temp_user.get_addr() + temp_user.get_port()) == sdbm_hash(name + addr + port):
+                self.get_element(i).declare_bwd()
+                return True
+
+        return False
+
+
 #
 # Global variables
 #
 
-
+# me: self
 me = User()
+# chat room name joined
 chatroom_name = ''
+# fwd socket
 peer_fwd_sck = socket.socket()
-peer_bwd_sck = socket.socket()
+# bwd socket
+bwd_sck = socket.socket()
+# server socket
 server_sck = socket.socket()
-
+# holding users
 user_list = UserList()
+# bwd socket list
+peer_bwd_socket_list = list()
 
+# Connection status flag
 CONNECTED = False
 
 
+# randomly triggered by server, if not exist, add user. if exist, do nothing. return void
 def update_members(instr):
     global user_list
     for i in range(0, len(instr), 3):
         user_list.add_user(User(instr[i], instr[i + 1], instr[i + 2]))
 
 
+# look the function below, return void
 def reconnect_server():
     CmdWin.insert(1.0, '\nConnection lost! attempting to reconnect ...')
     connect_server()
 
 
+# literally connect server, return void
 def connect_server():
     try:
         server_sck.connect((sys.argv[1], int(sys.argv[2])))
@@ -171,6 +223,7 @@ def connect_server():
         sys.exit(0)
 
 
+# check for socket connection status, True or False
 def is_connected(sck):
     try:
         sck.getpeername()
@@ -179,10 +232,64 @@ def is_connected(sck):
         return False
 
 
+def bwd_listener():
+
+    global bwd_sck
+
+    bwd_sck.bind(('', int(me.get_port())))
+    # Assume max no of bwd peers is 1000
+    bwd_sck.listen(1000)
+
+    bwd_client_socket, addr = bwd_sck.accept()
+
+    threading.Thread(target=bwd_handler, args=(bwd_client_socket, addr)).start()
+
+
+def bwd_handler(bwd_client_socket, addr):
+    global chatroom_name, user_list, CONNECTED
+
+    message = bwd_client_socket.recv(1000)
+
+    # P:roomname:username:IP:Port:msgID::\r\n
+    #      0        1      2  3    4
+    message_contents = parse_semicolon_list(message.decode('utf-8'))
+
+    # For updating the chatroom member list
+    try_join(chatroom_name)
+
+    # Check if user exists in list
+    if not user_list.isUserExists(message_contents[1], message_contents[2], message_contents[3]):
+        bwd_client_socket.close()
+        return
+
+    # Handshaking procedures -----------------------------
+
+    # Print out bwd msg to command window
+    CmdWin.insert(1.0, "A new backward link has come")
+
+    # Add this new bwd new user to socket_list
+    peer_bwd_socket_list.append(bwd_client_socket)
+
+    # Set new msgID by increment 1
+    me.set_msgID(me.get_msgID() + 1)
+    handshake_msg = "S:" + str(me.get_msgID()) + "::\r\n"
+    bwd_client_socket.send(handshake_msg.encode('utf-8'))
+
+    CONNECTED = True
+
+
+# when self just join chat room, check for suitable fwd, then connect it
+#   Condition, fwd != bwd, otherwise, the graph is corrupted
+# If failed, do it again after 10 seconds and again and again if fail again
+# If successful, break the infinite loop and exit the function
+# return void
+#
+#
 def select_peer():
     global user_list, me, chatroom_name
 
     while True:
+
         my_id = user_list.index(me)
 
         for delta in range(1, user_list.length):
@@ -190,14 +297,17 @@ def select_peer():
             peer = user_list.get_element(start)
 
             if peer.bwd:
+
                 continue
+
             else:
+
                 try:
                     peer_fwd_sck.connect((peer.addr, int(peer.port)))
                     peer_fwd_sck.sendall("P:{}:{}:{}:{}:{}::\r\n".format(
                         chatroom_name, me.get_name(), me.get_addr(), me.get_port(), me.get_msgID()
                     ).encode('utf-8'))
-                    return_msg = peer.recv(1000).decode('utf-8')
+                    return_msg = peer_fwd_sck.recv(1000).decode('utf-8')
 
                     if len(return_msg) == 0:
                         peer_fwd_sck.close()
@@ -221,7 +331,6 @@ def select_peer():
 
 
 def validate_name(name):
-
     # validates user input names (eg: chatroom name, username)
 
     # rejects:
@@ -236,8 +345,10 @@ def validate_name(name):
     return True
 
 
+# Get name input and set it as username and clear the input box if valid
+# If invalid, reject
+#
 def do_User():
-
     # Must be executed to set username before joining any group
     # This function is only available before any successful joins
 
@@ -257,14 +368,18 @@ def do_User():
     CmdWin.insert(1.0, outstr)
 
 
+# Use it after you have handled the first character, it returns list
+# it contains the message content, without the semicolon, the first character and the \r\n
 def parse_semicolon_list(msg):
     # parse a ':' separated message into a list
     chatroom_list = msg.split(':')[1:-2]
     return chatroom_list
 
 
+# Show all chat room
+#
+#
 def do_List():
-
     global server_sck
 
     CmdWin.insert(1.0, "\nPress List")
@@ -290,6 +405,8 @@ def do_List():
     CmdWin.insert(1.0, output_str)
 
 
+# Try to join a chat room
+# return True if success, False if failed
 def try_join(roomname):
     global me
 
@@ -311,6 +428,7 @@ def try_join(roomname):
         return True
 
 
+# Keep reporting to server for living
 def keep_alive():
     global chatroom_name
 
@@ -338,6 +456,7 @@ def do_Join():
     if not is_connected(server_sck):
         connect_server()
 
+    # get input string
     input_str = userentry.get()
     if not validate_name(input_str):
         output_str = "\n\'{}\' is an invalid chatroom name!".format(input_str)
@@ -356,6 +475,9 @@ def do_Join():
 
             # setup peer network
             threading.Thread(target=select_peer).start()
+
+            # handle bwd links
+            threading.Thread(target=bwd_listener).start()
 
     CmdWin.insert(1.0, output_str)
 
@@ -430,7 +552,7 @@ def main():
         sys.exit(2)
 
     me.set_addr(socket.gethostname())
-    me.set_addr(sys.argv[3])
+    me.set_port(sys.argv[3])
     user_list.add_user(me)
     connect_server()
     # add the thread to listen backwards

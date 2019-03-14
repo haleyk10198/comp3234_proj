@@ -49,6 +49,37 @@ class User:
         self.bwd = False
         self.fwd_bwd_semaphore = threading.Semaphore(1)
         self.sck = None
+        # List of poke timestamps(ts)
+        self.poke_ts = []
+
+    def recv_ACK(self):
+        # receive ACK and remove the oldest poke ts
+        self.get_poke_ts().pop(0)
+        CmdWin.insert(1.0, "\nReceived ACK from {}".format(self.get_name()))
+
+    def send_poke(self):
+        # Sends a poke message to this user and add a timestamp
+        global poke_sck, me, chatroom_name
+        poke_sck.sendto("K:{}:{}::\r\n".format(chatroom_name, me.get_name()).encode('utf-8'),
+                        (self.get_addr(), int(self.get_port())))
+        CmdWin.insert(1.0, "\nHave sent a poke to {}".format(self.get_name()))
+        ts = time.time()
+        self.get_poke_ts().append(ts)
+        print("[debug] Pending poke ts {}".format(self.get_poke_ts()))
+        thread = threading.Thread(target=self.monitor_poke)
+        thread.setDaemon(True)
+        thread.start()
+
+    def monitor_poke(self):
+        # monitor if the ACK is well received
+        time.sleep(2)
+        print("[debug] Monitor poke thread has woke")
+        print("[debug] Current time is {}, the time stamps are {}".format(time.time(), self.get_poke_ts()))
+        if self.get_poke_ts() and time.time() - self.get_poke_ts()[0] > 2.0:
+            # if there are unresolved pokes and it has been >2.0sec since the oldest poke
+            CmdWin.insert(1.0, "\nFailed to receive poke from {}".format(self.get_name()))
+            # give up on receiving the ACK
+            self.get_poke_ts().pop(0)
 
     def get_socket(self):
         return self.sck
@@ -84,9 +115,12 @@ class User:
     def get_port(self):
         return self.port
 
-    # DONE: Lock declare_bwd and declare_fwd to ensure bwd == fwd == 1 never happens
+    def get_poke_ts(self):
+        return self.poke_ts
 
     def declare_bwd(self, sck):
+
+        global CONNECTED
 
         self.fwd_bwd_semaphore.acquire()
 
@@ -101,9 +135,16 @@ class User:
               .format(self.name, "Success" if bwd else "Failed"))
         self.fwd_bwd_semaphore.release()
 
+        if bwd:
+            if not CONNECTED:
+                CmdWin.insert(1.0, "\nYou are now connected to the chatroom.")
+            CONNECTED = True
+
         return bwd
 
     def declare_fwd(self, sck):
+
+        global CONNECTED
 
         self.fwd_bwd_semaphore.acquire()
 
@@ -115,6 +156,11 @@ class User:
         fwd = self.fwd
         print("[debug] Tried to build forward link w/ {}, status: {}"
               .format(self.name, "Success" if fwd else "Failed"))
+
+        if fwd:
+            CmdWin.insert(1.0, "\nYou are now connected to the chatroom.")
+            CONNECTED = True
+
         self.fwd_bwd_semaphore.release()
 
         return fwd
@@ -134,8 +180,21 @@ class UserList:
         self.fwd_count = 0  # at most one
         self.hash = -1
 
+    def get_user_from_addr(self, addr, port):
+        for user in self.users:
+            if user.get_addr() == str(addr) and user.get_port() == str(port):
+                return user
+        return None
+
+    def get_names(self):
+        # returns the list of username
+        return [user.name for user in self.users]
+
     def add_user(self, user):
         if user.hash not in [u.hash for u in self.users]:
+            if user is not me:
+                CmdWin.insert(1.0, "\n{} @ ({}, {}) has joined the chatroom!"
+                          .format(user.get_name(), user.get_addr(), user.get_port()))
             self.users.append(user)
 
     def acquire_lock(self):
@@ -159,7 +218,7 @@ class UserList:
         return False
 
     @property
-    def declare_bwd(self):
+    def bwd_count(self):
         return reduce(lambda cnt, user: cnt+user.is_bwd(), self.users)
 
     def get_hash(self):
@@ -176,12 +235,17 @@ class UserList:
         return -1
 
     def get_user(self, u):
-        for i in range(0, len(self.users)):
-            if self.users[i].hash == u.hash:
-                return self.users[i]
+        for user in self.users:
+            if user.hash == u.hash:
+                return user
 
         return None
 
+    def get_user_from_name(self, name):
+        for user in self.users:
+            if user.name == name:
+                return user
+        return None
 
 #
 # Global variables
@@ -204,6 +268,65 @@ peer_bwd_socket_list = list()
 
 # Assume max no of bwd peers is 5
 MAX_BACKWARD_LINKS = 5
+
+CONNECTED = False
+
+poke_sck = None
+
+ACK_MESSAGE = "A::\r\n"
+
+
+def UDP_listener():
+
+    # Listener for UDP (poke) socket
+
+    global ACK_MESSAGE, user_list, poke_sck
+
+    while True:
+        data, addr = poke_sck.recvfrom(1024)
+        msg = data.decode('utf-8')
+
+        print("[debug] Received {} from {}".format(msg, addr))
+
+        if msg[0] == 'K':
+            # if poke comes in
+            instr = parse_semicolon_list(msg)
+
+            roomname, username = instr
+            if roomname != chatroom_name:
+                print("[debug] Received invalid poke message, \"{}\"".format(instr))
+            else:
+                user = user_list.get_user_from_name(username)
+                MsgWin.insert(1.0, "~~~[{}]Poke~~~".format(user.get_name()))
+                print("[debug] Have sent out ACK message")
+                poke_sck.sendto(ACK_MESSAGE.encode('utf-8'), (user.get_addr(), int(user.get_port())))
+
+        elif msg == ACK_MESSAGE:
+            # if ACK comes in
+            print("\nReceived ACK from {}".format(addr))
+            user = user_list.get_user_from_addr(addr[0], addr[1])
+            user.recv_ACK()
+        else:
+            # ignore
+            pass
+
+
+def setup_UDP():
+
+    # setup the poke port
+
+    global poke_sck
+
+    poke_sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    poke_sck.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    poke_sck.bind(('localhost', int(me.get_port())))
+    me.set_addr(poke_sck.getsockname()[0])
+
+    thread = threading.Thread(target=UDP_listener)
+    thread.setDaemon(True)
+    thread.start()
 
 
 # randomly triggered by server, if not exist, add user. if exist, do nothing. return void
@@ -244,14 +367,18 @@ def is_connected(sck):
 
 def bwd_listener():
 
-    global bwd_sck
+    global bwd_sck, user_list
 
-    bwd_sck.bind(('', int(me.get_port())))
+    bwd_sck.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    bwd_sck.bind(('localhost', int(me.get_port())))
     bwd_sck.listen(MAX_BACKWARD_LINKS)
 
-    bwd_client_socket, addr = bwd_sck.accept()
-
-    threading.Thread(target=bwd_handler, args=(bwd_client_socket, addr)).start()
+    while True:
+        bwd_client_socket, addr = bwd_sck.accept()
+        print("[debug] Received some request to establish handshake")
+        thread = threading.Thread(target=bwd_handler, args=(bwd_client_socket, addr))
+        thread.setDaemon(True)
+        thread.start()
 
 
 def bwd_handler(bwd_client_socket, addr):
@@ -262,11 +389,12 @@ def bwd_handler(bwd_client_socket, addr):
     # P:roomname:username:IP:Port:msgID::\r\n
     #      0        1      2  3    4
     message_contents = parse_semicolon_list(message.decode('utf-8'))
+    user = user_list.get_user(User(message_contents[1], message_contents[2], message_contents[3]))
+    print("[debug] Received a handshaking request from {}".format(addr))
 
     # For updating the chatroom member list
     try_join(chatroom_name)
 
-    user = user_list.get_user(User(message_contents[1], message_contents[2], message_contents[3]))
     # Check if user exists in list
     if not user:
         bwd_client_socket.close()
@@ -279,7 +407,7 @@ def bwd_handler(bwd_client_socket, addr):
         # Handshaking procedures -----------------------------
 
         # Print out bwd msg to command window
-        CmdWin.insert(1.0, "{} @ {} is now connected as your peer".format(message_contents[1], addr))
+        CmdWin.insert(1.0, "\n{} @ {} is now connected as your peer".format(message_contents[1], addr))
 
         # Add this new bwd new user to socket_list
         # peer_bwd_socket_list.append(bwd_client_socket)
@@ -303,8 +431,6 @@ def select_peer():
 
     while True:
 
-        peer_fwd_sck = socket.socket()
-
         user_list.acquire_lock()
         my_id = user_list.index(me)
 
@@ -322,19 +448,26 @@ def select_peer():
             else:
 
                 try:
+
+                    peer_fwd_sck = socket.socket()
+                    peer_fwd_sck.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     peer_fwd_sck.connect((peer.addr, int(peer.port)))
                     peer_fwd_sck.sendall("P:{}:{}:{}:{}:{}::\r\n".format(
                         chatroom_name, me.get_name(), me.get_addr(), me.get_port(), me.get_msgID()
                     ).encode('utf-8'))
+
+                    print("[debug] Sent out handshaking message")
                     return_msg = peer_fwd_sck.recv(1000).decode('utf-8')
 
                     if len(return_msg) == 0:
-
+                        print("[debug] Failed to receive handshaking message")
                         peer_fwd_sck.close()
                         continue
                     else:
+                        print("[debug] Received handshaking message")
                         peer.set_msgID(parse_semicolon_list(return_msg[1]))
                         if user_list.declare_fwd(start, peer_fwd_sck):
+                            user_list.release_lock()
                             break
 
                 except socket.error as e:
@@ -456,7 +589,7 @@ def keep_alive():
     global chatroom_name
 
     while True:
-        CmdWin.insert(1.0, '\nMaintaining chatroom membership with server...')
+        print("Maintaining chatroom membership with server...")
         try_join(chatroom_name)
 
         time.sleep(20)
@@ -487,20 +620,26 @@ def do_Join():
         userentry.delete(0, END)
         if try_join(input_str):
             chatroom_name = input_str
-            output_str = "\n You have successfully joined the chatroom \'{}\'!".format(chatroom_name)
+            output_str = "\nYou have successfully joined the chatroom \'{}\'!".format(chatroom_name)
             output_str += "\nList of members:"
 
             for i in range(0, user_list.length):
                 output_str += "\n\t{}".format(user_list.get_element(i).get_name())
 
             # setup thread for executing keepalive
-            threading.Thread(target=keep_alive).start()
+            keep_alive_thread = threading.Thread(target=keep_alive)
+            keep_alive_thread.setDaemon(True)
+            keep_alive_thread.start()
 
             # setup peer network
-            threading.Thread(target=select_peer).start()
+            select_peer_thread = threading.Thread(target=select_peer)
+            select_peer_thread.setDaemon(True)
+            select_peer_thread.start()
 
             # handle bwd links
-            threading.Thread(target=bwd_listener).start()
+            bwd_listener_thread = threading.Thread(target=bwd_listener)
+            bwd_listener_thread.setDaemon(True)
+            bwd_listener_thread.start()
 
     CmdWin.insert(1.0, output_str)
 
@@ -512,11 +651,62 @@ def do_Send():
 def do_Poke():
     CmdWin.insert(1.0, "\nPress Poke")
 
+    if not chatroom_name:
+        # if hasn't joined a chatroom
+        CmdWin.insert(1.0, "\nYou haven't joined a chatroom yet!")
+        return
+
+    if not CONNECTED:
+        # if joined, but haven't got a link yet
+        CmdWin.insert(1.0, "\nPlease wait until your client is connected to the chatroom")
+        return
+
+    nickname = userentry.get()
+    userentry.delete(0, END)
+
+    # update user list
+    try_join(chatroom_name)
+
+    if not nickname:
+        # No nickname is provided, display the list of nicknames in the chatroom
+
+        CmdWin.insert(1.0, "\nTo whom do you want to send the poke?\n"
+                      + " ".join(user_list.get_names()))
+
+        return
+    else:
+        peer = user_list.get_user_from_name(nickname)
+
+        if not peer:
+            CmdWin.insert(1.0, "\nThe selected user is not in the chatroom!")
+            return
+
+        if peer.name == me.name:
+            CmdWin.insert(1.0, "\nYou cannot poke yourself!")
+            return
+
+        print("[debug] executing peer.send_poke()")
+        peer.send_poke()
+
 
 def do_Quit():
     CmdWin.insert(1.0, "\nPress Quit")
+    close_ports()
     sys.exit(0)
 
+
+def close_ports():
+
+    # close all ports and free resources
+
+    poke_sck.close()
+    bwd_sck.close()
+
+    for i in range(user_list.length):
+        sck = user_list.get_element(i).get_socket()
+        if sck:
+            sck.close()
+    server_sck.close()
 
 #
 # Set up of Basic UI
@@ -574,11 +764,10 @@ def main():
         print("P2PChat.py <server address> <server port no.> <my port no.>")
         sys.exit(2)
 
-    me.set_addr(socket.gethostname())
     me.set_port(sys.argv[3])
+    setup_UDP()
     user_list.add_user(me)
     connect_server()
-    # add the thread to listen backwards
     win.mainloop()
 
 

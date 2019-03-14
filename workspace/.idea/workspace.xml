@@ -16,10 +16,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="274" column="11" selection-start-line="274" selection-start-column="11" selection-end-line="274" selection-end-column="11" />
+            <state relative-caret-position="462">
+              <caret line="699" column="40" selection-start-line="699" selection-start-column="40" selection-end-line="699" selection-end-column="40" />
               <folding>
-                <element signature="e#270#291#0" expanded="true" />
+                <element signature="n#!!doc" />
+                <element signature="e#377#378#0" />
+                <element signature="e#663#827#0" />
+                <element signature="e#846#4056#0" />
+                <element signature="e#4080#5815#0" />
               </folding>
             </state>
           </provider>
@@ -36,37 +40,41 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>.length</find>
-      <find>length()</find>
-      <find>.connect(</find>
-      <find>get_hash</find>
+      <find>sendto</find>
+      <find>peer</find>
+      <find>socket.socket()</find>
+      <find>socket.socket(</find>
+      <find>setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)</find>
+      <find>connect_server</find>
+      <find>me.get_port</find>
+      <find>received ack from</find>
+      <find>have sent a poke</find>
+      <find>poke_out</find>
       <find>add_user</find>
-      <find>is_</find>
-      <find>parse_semicolon_list</find>
-      <find>UserList</find>
-      <find>user_list</find>
-      <find>bwd_handler</find>
-      <find>try_join</find>
-      <find>CONNECTED</find>
-      <find>connected</find>
-      <find>user</find>
-      <find>bwd_client_socket</find>
-      <find>select_</find>
-      <find>acquire_</find>
-      <find>index</find>
-      <find>fwd_socket</find>
+      <find>cmdwin</find>
+      <find>ACK</find>
+      <find>sys.argv</find>
+      <find>gethostname()</find>
+      <find>setup_UDP</find>
+      <find>localhost</find>
+      <find>send_poke</find>
+      <find>UDP</find>
+      <find>poke_sck</find>
+      <find>server_sck</find>
+      <find>server_sck.</find>
       <find>bwd_sck</find>
-      <find>fwd_sck</find>
-      <find>lambda</find>
-      <find>select_peer</find>
-      <find>link</find>
-      <find>print(&quot;</find>
-      <find>declare_bwd</find>
-      <find>declare_fwd</find>
-      <find>peer_fwd_sck</find>
-      <find>handler</find>
-      <find>sendall</find>
+      <find>bwd_sck.</find>
+      <find>sck.set</find>
+      <find>.bind(</find>
+      <find>insert(</find>
+      <find>received ACK from</find>
+      <find>user.recv_ACK</find>
+      <find>recv_ACK</find>
     </findStrings>
+    <replaceStrings>
+      <replace>users</replace>
+      <replace>setDaemon(True)</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
@@ -77,6 +85,9 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/P2PChat-UI.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
@@ -85,10 +96,11 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="-7" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
     <option name="width" value="974" />
-    <option name="height" value="1047" />
+    <option name="height" value="527" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -137,7 +149,9 @@
       <workItem from="1552229067390" duration="2299000" />
       <workItem from="1552268190027" duration="341000" />
       <workItem from="1552408936243" duration="1529000" />
-      <workItem from="1552410556312" duration="3002000" />
+      <workItem from="1552410556312" duration="3101000" />
+      <workItem from="1552542703039" duration="10203000" />
+      <workItem from="1552564715818" duration="10626000" />
     </task>
     <task id="LOCAL-00001" summary="Creating helper classes">
       <created>1551610657718</created>
@@ -164,7 +178,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="28950000" />
+    <option name="totallyTimeSpent" value="49878000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -174,7 +188,7 @@
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.3275488" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.3264642" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -210,10 +224,14 @@
     <entry file="file://$PROJECT_DIR$/User.py" />
     <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="274" column="11" selection-start-line="274" selection-start-column="11" selection-end-line="274" selection-end-column="11" />
+        <state relative-caret-position="462">
+          <caret line="699" column="40" selection-start-line="699" selection-start-column="40" selection-end-line="699" selection-end-column="40" />
           <folding>
-            <element signature="e#270#291#0" expanded="true" />
+            <element signature="n#!!doc" />
+            <element signature="e#377#378#0" />
+            <element signature="e#663#827#0" />
+            <element signature="e#846#4056#0" />
+            <element signature="e#4080#5815#0" />
           </folding>
         </state>
       </provider>

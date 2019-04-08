@@ -265,6 +265,8 @@ server_sck = socket.socket()
 user_list = UserList()
 # bwd socket list
 peer_bwd_socket_list = list()
+# message id list
+msg_id_list = list()
 
 # Assume max no of bwd peers is 5
 MAX_BACKWARD_LINKS = 5
@@ -641,12 +643,61 @@ def do_Join():
             bwd_listener_thread.setDaemon(True)
             bwd_listener_thread.start()
 
+            # for each_user in user_list.users:
+
+            # handle messages
+            message_listener_thread = threading.Thread(target=listen_message)
+            message_listener_thread.setDaemon(True)
+            message_listener_thread.start()
+
     CmdWin.insert(1.0, output_str)
 
+def msg_listerner(peer):
+    while(True):
+        # assuming text content is less than 500 bytes. 550 bytes are used for giving more spaces
+        msg = poke_sck.recvfrom(550).decode('utf-8')
+        if msg[0] != 'T':
+            continue
+        # T:    roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
+        msg_list = parse_semicolon_list(msg)
+        msgID = msg_list[3]
+        if msgID in msg_id_list:
+            continue
+        CmdWin.insert(1.0, msg_list[5]) # change to length determined text
+
+
+def listen_message():
+    # for each peer, listen messages and send them to parse messgae function
+    # and then send if needed or show it on screen only
+    for each_peer in user_list.users:
+        if each_peer.is_fwd() or each_peer.is_bwd():
+            peer_msg_listener_thread = threading.Thread(target=msg_listerner(each_peer))
+            peer_msg_listener_thread.setDaemon(True)
+            peer_msg_listener_thread.start()
 
 def do_Send():
-    CmdWin.insert(1.0, "\nPress Send")
 
+    import uuid
+
+    # get input string
+    input_str = userentry.get()
+    if input_str == '':
+        CmdWin.insert(1.0, "Please enter text.")
+        return
+    if not CONNECTED:
+        CmdWin.insert(1.0, "Please join a room first")
+        return
+    # send the message to all bwd links and the only fwd link
+    for each_user in user_list.users:
+        if not each_user.is_fwd or not each_user.is_bwd:
+            continue
+        msgID = uuid.uuid4().hex
+        msg_id_list.append(msgID)
+        # CmdWin.insert(1.0, ''+each_user.sck)
+        each_user.get_socket().send(('T:'+chatroom_name+':'+me.hash()+':'+
+                                        me.get_name()+':'+msgID+':'+
+                                        str(len(input_str))+':'+input_str+'::\r\n').encode('utf-8'))
+        # T:roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
 
 def do_Poke():
     CmdWin.insert(1.0, "\nPress Poke")

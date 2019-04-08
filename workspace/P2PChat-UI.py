@@ -266,7 +266,7 @@ user_list = UserList()
 # bwd socket list
 peer_bwd_socket_list = list()
 # message id list
-msg_id_list = list()
+msg_id_hid_list = list()
 
 # Assume max no of bwd peers is 5
 MAX_BACKWARD_LINKS = 5
@@ -525,14 +525,12 @@ def do_User():
 
     CmdWin.insert(1.0, outstr)
 
-
 # Use it after you have handled the first character, it returns list
 # it contains the message content, without the semicolon, the first character and the \r\n
 def parse_semicolon_list(msg):
     # parse a ':' separated message into a list
     chatroom_list = msg.split(':')[1:-2]
     return chatroom_list
-
 
 # Show all chat room
 #
@@ -562,7 +560,6 @@ def do_List():
 
     CmdWin.insert(1.0, output_str)
 
-
 # Try to join a chat room
 # return True if success, False if failed
 def try_join(roomname):
@@ -585,7 +582,6 @@ def try_join(roomname):
         update_members(info_list[1:])
         return True
 
-
 # Keep reporting to server for living
 def keep_alive():
     global chatroom_name
@@ -595,7 +591,6 @@ def keep_alive():
         try_join(chatroom_name)
 
         time.sleep(20)
-
 
 def do_Join():
     global user_list, chatroom_name, me, CONNECTED
@@ -643,8 +638,6 @@ def do_Join():
             bwd_listener_thread.setDaemon(True)
             bwd_listener_thread.start()
 
-            # for each_user in user_list.users:
-
             # handle messages
             message_listener_thread = threading.Thread(target=listen_message)
             message_listener_thread.setDaemon(True)
@@ -652,26 +645,41 @@ def do_Join():
 
     CmdWin.insert(1.0, output_str)
 
-def msg_listerner(peer):
+def msg_listener(peer):
+
     while(True):
         # assuming text content is less than 500 bytes. 550 bytes are used for giving more spaces
-        msg = poke_sck.recvfrom(550).decode('utf-8')
+        # CmdWin.insert(1.0, "Listening to msg")
+        msg = peer.sck.recv(550).decode('utf-8')
         if msg[0] != 'T':
             continue
         # T:    roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
         msg_list = parse_semicolon_list(msg)
         msgID = msg_list[3]
-        if msgID in msg_id_list:
-            continue
-        CmdWin.insert(1.0, msg_list[5]) # change to length determined text
-
+        if msgID not in msg_id_hid_list:
+            for each_user in user_list.users:
+                if not each_user.is_fwd() and not each_user.is_bwd():
+                    continue
+                each_user.get_socket().send(
+                    msg.encode('utf-8')
+                )
+            MsgWin.insert(1.0,
+                          "Peer: " + msg_list[2] + " msg: " + msg_list[5] + "\n")  # change to length determined text
+            msg_id_hid_list.append(msgID)
 
 def listen_message():
-    # for each peer, listen messages and send them to parse messgae function
+
+    while True:
+        import time
+        time.sleep(1)
+        if CONNECTED:
+            break
+
+    # for each peer, listen messages and send them to parse message function
     # and then send if needed or show it on screen only
     for each_peer in user_list.users:
         if each_peer.is_fwd() or each_peer.is_bwd():
-            peer_msg_listener_thread = threading.Thread(target=msg_listerner(each_peer))
+            peer_msg_listener_thread = threading.Thread(target=msg_listener, args=(each_peer,))
             peer_msg_listener_thread.setDaemon(True)
             peer_msg_listener_thread.start()
 
@@ -680,8 +688,8 @@ def do_Send():
     import uuid
 
     # get input string
-    input_str = userentry.get()
-    if input_str == '':
+    text_str = userentry.get()
+    if text_str == '':
         CmdWin.insert(1.0, "Please enter text.")
         return
     if not CONNECTED:
@@ -689,14 +697,24 @@ def do_Send():
         return
     # send the message to all bwd links and the only fwd link
     for each_user in user_list.users:
-        if not each_user.is_fwd or not each_user.is_bwd:
+        if not each_user.is_fwd() and not each_user.is_bwd():
             continue
-        msgID = uuid.uuid4().hex
-        msg_id_list.append(msgID)
-        # CmdWin.insert(1.0, ''+each_user.sck)
-        each_user.get_socket().send(('T:'+chatroom_name+':'+me.hash()+':'+
-                                        me.get_name()+':'+msgID+':'+
-                                        str(len(input_str))+':'+input_str+'::\r\n').encode('utf-8'))
+        msgID = me.get_msgID()
+        me.set_msgID(msgID + 1)
+        msg_id_hid_list.append(msgID)
+        length_of_text = str(len(text_str))
+        send_string = 'T:'+chatroom_name
+        send_string = send_string+':'+str(sdbm_hash(text_str))
+        send_string = send_string+':'+me.get_name()
+        send_string = send_string+':'+str(msgID)
+        send_string = send_string+':'+length_of_text
+        send_string = send_string+':'+text_str+'::\r\n'
+
+        each_user.get_socket().send(
+            send_string.encode('utf-8')
+        )
+
+        MsgWin.insert(1.0, "yourself: " + text_str + '\n')
         # T:roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
 
 def do_Poke():
@@ -739,12 +757,10 @@ def do_Poke():
         print("[debug] executing peer.send_poke()")
         peer.send_poke()
 
-
 def do_Quit():
     CmdWin.insert(1.0, "\nPress Quit")
     close_ports()
     sys.exit(0)
-
 
 def close_ports():
 

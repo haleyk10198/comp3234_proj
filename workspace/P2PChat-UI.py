@@ -44,7 +44,7 @@ class User:
         self.name = name
         self.addr = addr
         self.port = port
-        self.msgID = 0
+        self.msgID = -1
         self.fwd = False
         self.bwd = False
         self.fwd_bwd_semaphore = threading.Semaphore(1)
@@ -91,7 +91,14 @@ class User:
         return self.msgID
 
     def set_msgID(self, msgID):
-        self.msgID = msgID
+        print("[debug] Setting {}'s msgID from {} to {}".format(self.get_name(), self.msgID, msgID))
+        if self.msgID == -1 or self.msgID+1 == msgID:
+            self.msgID = msgID
+            print("[debug] msgID updated successfully.")
+            return True
+
+        print("[debug] Failed to update msgID.")
+        return False
 
     @property
     def hash(self):
@@ -139,6 +146,7 @@ class User:
             if not CONNECTED:
                 CmdWin.insert(1.0, "\nYou are now connected to the chatroom.")
             CONNECTED = True
+            listen_message(self)
 
         return bwd
 
@@ -160,6 +168,7 @@ class User:
         if fwd:
             CmdWin.insert(1.0, "\nYou are now connected to the chatroom.")
             CONNECTED = True
+            listen_message(self)
 
         self.fwd_bwd_semaphore.release()
 
@@ -196,6 +205,11 @@ class UserList:
                 CmdWin.insert(1.0, "\n{} @ ({}, {}) has joined the chatroom!"
                           .format(user.get_name(), user.get_addr(), user.get_port()))
             self.users.append(user)
+
+    def remove(self, user):
+        if user.sck:
+            user.sck.close()
+        self.users.remove(user)
 
     def acquire_lock(self):
         self.lock.acquire()
@@ -247,6 +261,21 @@ class UserList:
                 return user
         return None
 
+    def get_user_from_hash(self, hash):
+        for user in self.users:
+            if user.hash == hash:
+                return user
+
+        return None
+
+    @property
+    def fwd_users(self):
+        return list(filter(lambda x: x.is_fwd(), self.users))
+
+    @property
+    def bwd_users(self):
+        return list(filter(lambda x: x.is_bwd(), self.users))
+
 #
 # Global variables
 #
@@ -266,7 +295,7 @@ user_list = UserList()
 # bwd socket list
 peer_bwd_socket_list = list()
 # message id list
-msg_id_hid_list = list()
+# msg_id_hid_list = list()
 
 # Assume max no of bwd peers is 5
 MAX_BACKWARD_LINKS = 5
@@ -290,7 +319,9 @@ def UDP_listener():
 
         print("[debug] Received {} from {}".format(msg, addr))
 
-        if msg[0] == 'K':
+        if len(msg) == 0:
+            setup_UDP()
+        elif msg[0] == 'K':
             # if poke comes in
             instr = parse_semicolon_list(msg)
 
@@ -299,7 +330,7 @@ def UDP_listener():
                 print("[debug] Received invalid poke message, \"{}\"".format(instr))
             else:
                 user = user_list.get_user_from_name(username)
-                MsgWin.insert(1.0, "~~~[{}]Poke~~~".format(user.get_name()))
+                MsgWin.insert(1.0, "\n~~~[{}]Poke~~~".format(user.get_name()))
                 print("[debug] Have sent out ACK message")
                 poke_sck.sendto(ACK_MESSAGE.encode('utf-8'), (user.get_addr(), int(user.get_port())))
 
@@ -467,7 +498,7 @@ def select_peer():
                         continue
                     else:
                         print("[debug] Received handshaking message")
-                        peer.set_msgID(parse_semicolon_list(return_msg[1]))
+                        peer.set_msgID(int(parse_semicolon_list(return_msg)[0]))
                         if user_list.declare_fwd(start, peer_fwd_sck):
                             user_list.release_lock()
                             break
@@ -639,11 +670,48 @@ def do_Join():
             bwd_listener_thread.start()
 
             # handle messages
-            message_listener_thread = threading.Thread(target=listen_message)
-            message_listener_thread.setDaemon(True)
-            message_listener_thread.start()
+            # message_listener_thread = threading.Thread(target=listen_message)
+            # message_listener_thread.setDaemon(True)
+            # message_listener_thread.start()
 
     CmdWin.insert(1.0, output_str)
+
+
+def is_msg_valid(msg_list):
+    origin_user = user_list.get_user_from_name(msg_list[2])
+    if msg_list[0] != chatroom_name:
+        return False
+
+    if not origin_user:
+        print("[debug] Received message from {} which is not recognized by user list, updating user list ..."
+              .format(msg_list[2]))
+        try_join(chatroom_name)
+        origin_user = user_list.get_user_from_name(msg_list[2])
+        if not origin_user:
+            print("[debug] Unexpected error, failed to find user in the updated list.")
+            return False
+        else:
+            print("[debug] Successfully found user in the updated list.")
+    
+    if str(origin_user.hash) != msg_list[1]:
+        print("[debug] Unexpected error, user hash does not match the supplied hash.")
+        print("[debug] Expected hash is {}, found {}".format(origin_user.hash, msg_list[1]))
+        print("[debug] User detail: {}, {}, {}".format(origin_user.addr, origin_user.port, origin_user.name))
+        return False
+    if len(msg_list[5]) != int(msg_list[4]):
+        print("[debug] Unexpected error, the length of message does not message the specified length")
+        return False
+
+    return origin_user.set_msgID(int(msg_list[3]))
+
+
+def parse_msg_list(msg):
+    msg_list = parse_semicolon_list(msg)
+    for i in range(6, len(msg_list)):
+        msg_list[5] += ":"+msg_list[i]
+
+    return msg_list[0: 6]
+
 
 def msg_listener(peer):
 
@@ -651,37 +719,34 @@ def msg_listener(peer):
         # assuming text content is less than 500 bytes. 550 bytes are used for giving more spaces
         # CmdWin.insert(1.0, "Listening to msg")
         msg = peer.sck.recv(550).decode('utf-8')
-        if msg[0] != 'T':
+        if len(msg) == 0:
+            # remove the connection
+            user_list.remove(peer)
+        elif msg[0] != 'T':
             continue
         # T:    roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
-        msg_list = parse_semicolon_list(msg)
-        msgID = msg_list[3]
-        if msgID not in msg_id_hid_list:
-            for each_user in user_list.users:
-                if not each_user.is_fwd() and not each_user.is_bwd():
-                    continue
+        msg_list = parse_msg_list(msg)
+        if is_msg_valid(msg_list):
+            for each_user in user_list.fwd_users+user_list.bwd_users:
                 each_user.get_socket().send(
                     msg.encode('utf-8')
                 )
             MsgWin.insert(1.0,
-                          "Peer: " + msg_list[2] + " msg: " + msg_list[5] + "\n")  # change to length determined text
-            msg_id_hid_list.append(msgID)
+                          "\nPeer: " + msg_list[2] + " msg: " + msg_list[5])  # change to length determined text
+            # msg_id_hid_list.append(msgID)
 
-def listen_message():
 
-    while True:
-        import time
-        time.sleep(1)
-        if CONNECTED:
-            break
-
+def listen_message(peer):
     # for each peer, listen messages and send them to parse message function
     # and then send if needed or show it on screen only
-    for each_peer in user_list.users:
-        if each_peer.is_fwd() or each_peer.is_bwd():
-            peer_msg_listener_thread = threading.Thread(target=msg_listener, args=(each_peer,))
-            peer_msg_listener_thread.setDaemon(True)
-            peer_msg_listener_thread.start()
+
+    # Changed to listen to the passed peer only
+    # This function is called by declare_fwd, declare_bwd
+
+    peer_msg_listener_thread = threading.Thread(target=msg_listener, args=(peer,))
+    peer_msg_listener_thread.setDaemon(True)
+    peer_msg_listener_thread.start()
+
 
 def do_Send():
 
@@ -690,32 +755,36 @@ def do_Send():
     # get input string
     text_str = userentry.get()
     if text_str == '':
-        CmdWin.insert(1.0, "Please enter text.")
+        CmdWin.insert(1.0, "\nPlease enter text.")
         return
     if not CONNECTED:
-        CmdWin.insert(1.0, "Please join a room first")
+        CmdWin.insert(1.0, "\nPlease wait until you are properly connected with other peers")
         return
+    userentry.delete(0, END)
     # send the message to all bwd links and the only fwd link
-    for each_user in user_list.users:
-        if not each_user.is_fwd() and not each_user.is_bwd():
-            continue
-        msgID = me.get_msgID()
-        me.set_msgID(msgID + 1)
-        msg_id_hid_list.append(msgID)
-        length_of_text = str(len(text_str))
-        send_string = 'T:'+chatroom_name
-        send_string = send_string+':'+str(sdbm_hash(text_str))
-        send_string = send_string+':'+me.get_name()
-        send_string = send_string+':'+str(msgID)
-        send_string = send_string+':'+length_of_text
-        send_string = send_string+':'+text_str+'::\r\n'
+    msgID = me.get_msgID()
+    # msg_id_hid_list.append(msgID)
+    length_of_text = str(len(text_str))
+    send_string = 'T:'+chatroom_name
+    send_string = send_string+':'+str(me.hash)
+    send_string = send_string+':'+me.get_name()
+    send_string = send_string+':'+str(msgID+1)
+    send_string = send_string+':'+length_of_text
+    send_string = send_string+':'+text_str+'::\r\n'
 
-        each_user.get_socket().send(
-            send_string.encode('utf-8')
-        )
+    msg_list = parse_msg_list(send_string)
+    if is_msg_valid(msg_list):
+        for each_user in user_list.fwd_users+user_list.bwd_users:
+            each_user.get_socket().send(
+                send_string.encode('utf-8')
+            )
 
-        MsgWin.insert(1.0, "yourself: " + text_str + '\n')
+        MsgWin.insert(1.0, "\nyourself: " + text_str)
         # T:roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
+    else:
+        print("[debug] Unexpected error, sending message is not valid.")
+        print(msg_list)
+
 
 def do_Poke():
     CmdWin.insert(1.0, "\nPress Poke")
@@ -757,10 +826,12 @@ def do_Poke():
         print("[debug] executing peer.send_poke()")
         peer.send_poke()
 
+
 def do_Quit():
     CmdWin.insert(1.0, "\nPress Quit")
     close_ports()
     sys.exit(0)
+
 
 def close_ports():
 
@@ -832,6 +903,7 @@ def main():
         sys.exit(2)
 
     me.set_port(sys.argv[3])
+    me.set_msgID(0)
     setup_UDP()
     user_list.add_user(me)
     connect_server()

@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27592385-9b97-4150-930a-9e36523c9dbc" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/P2PChat-UI.py" afterDir="false" />
-    </list>
+    <list default="true" id="27592385-9b97-4150-930a-9e36523c9dbc" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,8 +13,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="462">
-              <caret line="699" column="40" selection-start-line="699" selection-start-column="40" selection-end-line="699" selection-end-column="40" />
+            <state>
+              <caret lean-forward="true" />
               <folding>
                 <element signature="n#!!doc" />
                 <element signature="e#377#378#0" />
@@ -151,7 +148,7 @@
       <workItem from="1552408936243" duration="1529000" />
       <workItem from="1552410556312" duration="3101000" />
       <workItem from="1552542703039" duration="10203000" />
-      <workItem from="1552564715818" duration="10626000" />
+      <workItem from="1552564715818" duration="10787000" />
     </task>
     <task id="LOCAL-00001" summary="Creating helper classes">
       <created>1551610657718</created>
@@ -178,11 +175,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="49878000" />
+    <option name="totallyTimeSpent" value="50039000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.27985075" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -224,8 +220,8 @@
     <entry file="file://$PROJECT_DIR$/User.py" />
     <entry file="file://$PROJECT_DIR$/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="462">
-          <caret line="699" column="40" selection-start-line="699" selection-start-column="40" selection-end-line="699" selection-end-column="40" />
+        <state>
+          <caret lean-forward="true" />
           <folding>
             <element signature="n#!!doc" />
             <element signature="e#377#378#0" />

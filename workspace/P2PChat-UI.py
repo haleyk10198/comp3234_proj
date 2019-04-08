@@ -734,17 +734,8 @@ def msg_listener(peer):
                     msg.encode('utf-8')
                 )
 
-            count = 0
-            start_index = 0
-            for i in range(len(msg)):
-                if msg[i] == ':':
-                    count = count + 1
-                    if count == 6:
-                        start_index = i + 1
-                        break
-
             MsgWin.insert(1.0,
-                          "\nPeer: " + msg_list[2] + " msg: " + msg[start_index: start_index + int(msg_list[4])])  # change to length determined text
+                          "\nPeer: " + msg_list[2] + " msg: " + msg_list[5])  # change to length determined text
             # msg_id_hid_list.append(msgID)
 
 

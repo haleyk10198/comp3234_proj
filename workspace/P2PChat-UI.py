@@ -92,7 +92,7 @@ class User:
 
     def set_msgID(self, msgID):
         print("[debug] Setting {}'s msgID from {} to {}".format(self.get_name(), self.msgID, msgID))
-        if self.msgID == -1 or self.msgID+1 == msgID:
+        if self.msgID == -1 or self.msgID + 1 == msgID:
             self.msgID = msgID
             print("[debug] msgID updated successfully.")
             return True
@@ -203,7 +203,7 @@ class UserList:
         if user.hash not in [u.hash for u in self.users]:
             if user is not me:
                 CmdWin.insert(1.0, "\n{} @ ({}, {}) has joined the chatroom!"
-                          .format(user.get_name(), user.get_addr(), user.get_port()))
+                              .format(user.get_name(), user.get_addr(), user.get_port()))
             self.users.append(user)
 
     def remove(self, user):
@@ -233,7 +233,7 @@ class UserList:
 
     @property
     def bwd_count(self):
-        return reduce(lambda cnt, user: cnt+user.is_bwd(), self.users)
+        return reduce(lambda cnt, user: cnt + user.is_bwd(), self.users)
 
     def get_hash(self):
         return self.hash
@@ -276,6 +276,7 @@ class UserList:
     def bwd_users(self):
         return list(filter(lambda x: x.is_bwd(), self.users))
 
+
 #
 # Global variables
 #
@@ -308,7 +309,6 @@ ACK_MESSAGE = "A::\r\n"
 
 
 def UDP_listener():
-
     # Listener for UDP (poke) socket
 
     global ACK_MESSAGE, user_list, poke_sck
@@ -345,7 +345,6 @@ def UDP_listener():
 
 
 def setup_UDP():
-
     # setup the poke port
 
     global poke_sck
@@ -399,7 +398,6 @@ def is_connected(sck):
 
 
 def bwd_listener():
-
     global bwd_sck, user_list
 
     bwd_sck.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -556,12 +554,14 @@ def do_User():
 
     CmdWin.insert(1.0, outstr)
 
+
 # Use it after you have handled the first character, it returns list
 # it contains the message content, without the semicolon, the first character and the \r\n
 def parse_semicolon_list(msg):
     # parse a ':' separated message into a list
     chatroom_list = msg.split(':')[1:-2]
     return chatroom_list
+
 
 # Show all chat room
 #
@@ -591,6 +591,7 @@ def do_List():
 
     CmdWin.insert(1.0, output_str)
 
+
 # Try to join a chat room
 # return True if success, False if failed
 def try_join(roomname):
@@ -613,6 +614,7 @@ def try_join(roomname):
         update_members(info_list[1:])
         return True
 
+
 # Keep reporting to server for living
 def keep_alive():
     global chatroom_name
@@ -622,6 +624,7 @@ def keep_alive():
         try_join(chatroom_name)
 
         time.sleep(20)
+
 
 def do_Join():
     global user_list, chatroom_name, me, CONNECTED
@@ -692,7 +695,7 @@ def is_msg_valid(msg_list):
             return False
         else:
             print("[debug] Successfully found user in the updated list.")
-    
+
     if str(origin_user.hash) != msg_list[1]:
         print("[debug] Unexpected error, user hash does not match the supplied hash.")
         print("[debug] Expected hash is {}, found {}".format(origin_user.hash, msg_list[1]))
@@ -708,14 +711,13 @@ def is_msg_valid(msg_list):
 def parse_msg_list(msg):
     msg_list = parse_semicolon_list(msg)
     for i in range(6, len(msg_list)):
-        msg_list[5] += ":"+msg_list[i]
+        msg_list[5] += ":" + msg_list[i]
 
     return msg_list[0: 6]
 
 
 def msg_listener(peer):
-
-    while(True):
+    while (True):
         # assuming text content is less than 500 bytes. 550 bytes are used for giving more spaces
         # CmdWin.insert(1.0, "Listening to msg")
         msg = peer.sck.recv(550).decode('utf-8')
@@ -727,12 +729,22 @@ def msg_listener(peer):
         # T:    roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
         msg_list = parse_msg_list(msg)
         if is_msg_valid(msg_list):
-            for each_user in user_list.fwd_users+user_list.bwd_users:
+            for each_user in user_list.fwd_users + user_list.bwd_users:
                 each_user.get_socket().send(
                     msg.encode('utf-8')
                 )
+
+            count = 0
+            start_index = 0
+            for i in range(len(msg)):
+                if msg[i] == ':':
+                    count = count + 1
+                    if count == 6:
+                        start_index = i + 1
+                        break
+
             MsgWin.insert(1.0,
-                          "\nPeer: " + msg_list[2] + " msg: " + msg_list[5])  # change to length determined text
+                          "\nPeer: " + msg_list[2] + " msg: " + msg[start_index: start_index + int(msg_list[4])])  # change to length determined text
             # msg_id_hid_list.append(msgID)
 
 
@@ -750,8 +762,6 @@ def listen_message(peer):
 
 def do_Send():
 
-    import uuid
-
     # get input string
     text_str = userentry.get()
     if text_str == '':
@@ -765,16 +775,18 @@ def do_Send():
     msgID = me.get_msgID()
     # msg_id_hid_list.append(msgID)
     length_of_text = str(len(text_str))
-    send_string = 'T:'+chatroom_name
-    send_string = send_string+':'+str(me.hash)
-    send_string = send_string+':'+me.get_name()
-    send_string = send_string+':'+str(msgID+1)
-    send_string = send_string+':'+length_of_text
-    send_string = send_string+':'+text_str+'::\r\n'
+    send_string = 'T:' + chatroom_name
+    send_string = send_string + ':' + str(me.hash)
+    send_string = send_string + ':' + me.get_name()
+    send_string = send_string + ':' + str(msgID + 1)
+    send_string = send_string + ':' + length_of_text
+    send_string = send_string + ':' + text_str + '::\r\n'
+
+    print(send_string)
 
     msg_list = parse_msg_list(send_string)
     if is_msg_valid(msg_list):
-        for each_user in user_list.fwd_users+user_list.bwd_users:
+        for each_user in user_list.fwd_users + user_list.bwd_users:
             each_user.get_socket().send(
                 send_string.encode('utf-8')
             )
@@ -834,7 +846,6 @@ def do_Quit():
 
 
 def close_ports():
-
     # close all ports and free resources
 
     poke_sck.close()
@@ -845,6 +856,7 @@ def close_ports():
         if sck:
             sck.close()
     server_sck.close()
+
 
 #
 # Set up of Basic UI

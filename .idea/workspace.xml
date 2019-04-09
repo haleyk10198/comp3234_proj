@@ -2,9 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="060ae150-d000-4fab-9cf6-e621421e1bc5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workspace/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/workspace/P2PChat-UI.py" afterDir="false" />
     </list>
@@ -19,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="725" column="13" selection-start-line="725" selection-start-column="13" selection-end-line="725" selection-end-column="13" />
+            <state relative-caret-position="196">
+              <caret line="730" column="18" selection-start-line="730" selection-start-column="18" selection-end-line="730" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -29,11 +26,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>length_of_text</find>
-      <find>is_msg_validate</find>
-      <find>not in</find>
-      <find>listen_message</find>
-      <find>parse_semicolon_list(</find>
       <find>CmdWin.insert(1.0, &quot;</find>
       <find>self.hash</find>
       <find>self.addr</find>
@@ -59,6 +51,11 @@
       <find>setup_UDP</find>
       <find>.bind(</find>
       <find>msg_list</find>
+      <find>peer</find>
+      <find>close</find>
+      <find>.close()</find>
+      <find>select_peer</find>
+      <find>CONNECTED</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -81,6 +78,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -97,7 +95,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -132,16 +129,18 @@
       <workItem from="1554715076935" duration="59000" />
       <workItem from="1554723847067" duration="4228000" />
       <workItem from="1554729093871" duration="769000" />
+      <workItem from="1554799075471" duration="1101000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7510000" />
+    <option name="totallyTimeSpent" value="8611000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12739871" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12846482" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -178,8 +177,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="725" column="13" selection-start-line="725" selection-start-column="13" selection-end-line="725" selection-end-column="13" />
+        <state relative-caret-position="196">
+          <caret line="730" column="18" selection-start-line="730" selection-start-column="18" selection-end-line="730" selection-end-column="18" />
         </state>
       </provider>
     </entry>

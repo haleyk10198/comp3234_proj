@@ -462,6 +462,10 @@ def select_peer():
 
     while True:
 
+        if user_list.fwd_count > 0:
+            time.sleep(10)
+            continue
+
         user_list.acquire_lock()
         my_id = user_list.index(me)
 
@@ -724,6 +728,7 @@ def msg_listener(peer):
         if len(msg) == 0:
             # remove the connection
             user_list.remove(peer)
+            return
         elif msg[0] != 'T':
             continue
         # T:    roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
@@ -734,9 +739,7 @@ def msg_listener(peer):
                     msg.encode('utf-8')
                 )
 
-            MsgWin.insert(1.0,
-                          "\nPeer: " + msg_list[2] + " msg: " + msg_list[5])  # change to length determined text
-            # msg_id_hid_list.append(msgID)
+            MsgWin.insert(1.0, "\n[{}] {}".format(msg_list[2], msg_list[5]))
 
 
 def listen_message(peer):
@@ -782,7 +785,7 @@ def do_Send():
                 send_string.encode('utf-8')
             )
 
-        MsgWin.insert(1.0, "\nyourself: " + text_str)
+        MsgWin.insert(1.0, "\n[{}] {}".format(me.get_name(), text_str))
         # T:roomname:originHID:origin_username:msgID:msgLength:Message content::\r\n
     else:
         print("[debug] Unexpected error, sending message is not valid.")

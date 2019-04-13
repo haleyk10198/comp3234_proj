@@ -97,6 +97,7 @@ class User:
             print("[debug] msgID updated successfully.")
             return True
 
+        CmdWin.insert(1.0, "\nReceived invalid text message")
         print("[debug] Failed to update msgID.")
         return False
 
@@ -326,8 +327,9 @@ def UDP_listener():
             instr = parse_semicolon_list(msg)
 
             roomname, username = instr
-            if roomname != chatroom_name:
+            if roomname != chatroom_name or me.get_name() == username or user_list.get_user_from_name(username) is None:
                 print("[debug] Received invalid poke message, \"{}\"".format(instr))
+                CmdWin.insert(1.0, "\nReceived invalid poke message.")
             else:
                 user = user_list.get_user_from_name(username)
                 MsgWin.insert(1.0, "\n~~~[{}]Poke~~~".format(user.get_name()))
@@ -510,6 +512,7 @@ def select_peer():
                     print(e)
                     continue
         else:
+            CmdWin.insert(1.0, "\nFailed to construct forward link, we will get them next time.")
             user_list.release_lock()
             time.sleep(10)
             continue

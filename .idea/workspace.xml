@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="196">
-              <caret line="730" column="18" selection-start-line="730" selection-start-column="18" selection-end-line="730" selection-end-column="18" />
+            <state relative-caret-position="574">
+              <caret line="106" lean-forward="true" selection-start-line="106" selection-end-line="106" />
             </state>
           </provider>
         </entry>
@@ -26,8 +26,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>CmdWin.insert(1.0, &quot;</find>
-      <find>self.hash</find>
       <find>self.addr</find>
       <find>set_addr</find>
       <find>sdbm</find>
@@ -56,6 +54,8 @@
       <find>.close()</find>
       <find>select_peer</find>
       <find>CONNECTED</find>
+      <find>poke</find>
+      <find>ACK</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -78,7 +78,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -95,6 +94,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -129,18 +129,18 @@
       <workItem from="1554715076935" duration="59000" />
       <workItem from="1554723847067" duration="4228000" />
       <workItem from="1554729093871" duration="769000" />
-      <workItem from="1554799075471" duration="1101000" />
+      <workItem from="1554799075471" duration="1166000" />
+      <workItem from="1555173975876" duration="480000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8611000" />
+    <option name="totallyTimeSpent" value="9156000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12846482" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12953092" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -167,6 +167,9 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="LAST_COMMIT_MESSAGE" value="" />
+  </component>
   <component name="editorHistoryManager">
     <entry file="file://$USER_HOME$/.PyCharm2018.3/system/python_stubs/-313451744/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -177,8 +180,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="196">
-          <caret line="730" column="18" selection-start-line="730" selection-start-column="18" selection-end-line="730" selection-end-column="18" />
+        <state relative-caret-position="574">
+          <caret line="106" lean-forward="true" selection-start-line="106" selection-end-line="106" />
         </state>
       </provider>
     </entry>

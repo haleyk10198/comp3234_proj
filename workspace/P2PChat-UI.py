@@ -446,8 +446,6 @@ def bwd_handler(bwd_client_socket, addr):
         # peer_bwd_socket_list.append(bwd_client_socket)
         # This is moved inside declare bwd
 
-        # Set new msgID by increment 1
-        me.set_msgID(me.get_msgID() + 1)
         handshake_msg = "S:" + str(me.get_msgID()) + "::\r\n"
         bwd_client_socket.sendall(handshake_msg.encode('utf-8'))
 
@@ -764,8 +762,11 @@ def do_Send():
     if text_str == '':
         CmdWin.insert(1.0, "\nPlease enter text.")
         return
+    if not chatroom_name:
+        CmdWin.inset(1.0, "\nPlease join a chatroom first.")
+        return
     if not CONNECTED:
-        CmdWin.insert(1.0, "\nPlease wait until you are properly connected with other peers")
+        CmdWin.insert(1.0, "\nPlease wait until you are properly connected with other peers.")
         return
     userentry.delete(0, END)
     # send the message to all bwd links and the only fwd link

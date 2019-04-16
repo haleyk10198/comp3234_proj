@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="060ae150-d000-4fab-9cf6-e621421e1bc5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workspace/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/workspace/P2PChat-UI.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="137">
-              <caret line="62" column="76" selection-start-line="62" selection-start-column="76" selection-end-line="62" selection-end-column="76" />
+            <state relative-caret-position="221">
+              <caret line="740" column="30" selection-start-line="740" selection-start-column="30" selection-end-line="740" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -135,16 +134,17 @@
       <workItem from="1555257150336" duration="700000" />
       <workItem from="1555395116814" duration="459000" />
       <workItem from="1555395830114" duration="291000" />
+      <workItem from="1555396217654" duration="23000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10606000" />
+    <option name="totallyTimeSpent" value="10629000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.065565035" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.06609808" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -184,8 +184,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="137">
-          <caret line="62" column="76" selection-start-line="62" selection-start-column="76" selection-end-line="62" selection-end-column="76" />
+        <state relative-caret-position="221">
+          <caret line="740" column="30" selection-start-line="740" selection-start-column="30" selection-end-line="740" selection-end-column="30" />
         </state>
       </provider>
     </entry>

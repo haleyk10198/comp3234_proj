@@ -736,9 +736,9 @@ def parse_msg_list(msg):
 
 def msg_listener(peer):
     while (True):
-        # assuming text content is less than 500 bytes. 600 bytes are used for giving more spaces
+        # assuming text content is less than 500 bytes. 650 bytes are used for giving more spaces
         # CmdWin.insert(1.0, "Listening to msg")
-        msg = peer.sck.recv(600).decode('utf-8')
+        msg = peer.sck.recv(650).decode('utf-8')
         if len(msg) == 0:
             # remove the connection
             user_list.remove(peer)

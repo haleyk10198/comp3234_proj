@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="495">
-              <caret line="385" column="30" selection-start-line="385" selection-start-column="30" selection-end-line="385" selection-end-column="30" />
+            <state relative-caret-position="137">
+              <caret line="62" column="76" selection-start-line="62" selection-start-column="76" selection-end-line="62" selection-end-column="76" />
             </state>
           </provider>
         </entry>
@@ -26,7 +26,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>!=</find>
       <find>str(me.hash)</find>
       <find>self.msgID</find>
       <find>msgID =</find>
@@ -56,6 +55,7 @@
       <find>CONNECTED</find>
       <find>UDP_listener</find>
       <find>remove</find>
+      <find>originHID</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -98,6 +98,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -132,18 +133,18 @@
       <workItem from="1554799075471" duration="1166000" />
       <workItem from="1555173975876" duration="480000" />
       <workItem from="1555257150336" duration="700000" />
-      <workItem from="1555395116814" duration="301000" />
+      <workItem from="1555395116814" duration="459000" />
+      <workItem from="1555395830114" duration="291000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10157000" />
+    <option name="totallyTimeSpent" value="10606000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.06503198" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.065565035" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -183,8 +184,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="495">
-          <caret line="385" column="30" selection-start-line="385" selection-start-column="30" selection-end-line="385" selection-end-column="30" />
+        <state relative-caret-position="137">
+          <caret line="62" column="76" selection-start-line="62" selection-start-column="76" selection-end-line="62" selection-end-column="76" />
         </state>
       </provider>
     </entry>

@@ -60,8 +60,7 @@ class User:
     def send_poke(self):
         # Sends a poke message to this user and add a timestamp
         global poke_sck, me, chatroom_name
-        poke_sck.sendto("K:{}:{}::\r\n".format(chatroom_name, me.get_name()).encode('utf-8'),
-                        (self.get_addr(), int(self.get_port())))
+        poke_sck.sendto("K:{}:{}::\r\n".format(chatroom_name, me.get_name()).encode('utf-8'), (self.get_addr(), int(self.get_port())))
         CmdWin.insert(1.0, "\nHave sent a poke to {}".format(self.get_name()))
         ts = time.time()
         self.get_poke_ts().append(ts)
@@ -737,9 +736,9 @@ def parse_msg_list(msg):
 
 def msg_listener(peer):
     while (True):
-        # assuming text content is less than 500 bytes. 550 bytes are used for giving more spaces
+        # assuming text content is less than 500 bytes. 600 bytes are used for giving more spaces
         # CmdWin.insert(1.0, "Listening to msg")
-        msg = peer.sck.recv(550).decode('utf-8')
+        msg = peer.sck.recv(600).decode('utf-8')
         if len(msg) == 0:
             # remove the connection
             user_list.remove(peer)

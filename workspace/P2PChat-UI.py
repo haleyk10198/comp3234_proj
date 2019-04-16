@@ -374,7 +374,7 @@ def update_members(instr):
     hash_str = []
     for i in range(0, len(instr), 3):
         user_list.add_user(User(instr[i], instr[i + 1], instr[i + 2]))
-        hash_str.add(User(instr[i], instr[i+1], instr[i+2]).hash)
+        hash_str.append(User(instr[i], instr[i+1], instr[i+2]).hash)
 
     rmv_list = []
     for user in user_list.users:

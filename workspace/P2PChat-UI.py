@@ -54,7 +54,10 @@ class User:
 
     def recv_ACK(self):
         # receive ACK and remove the oldest poke ts
-        self.get_poke_ts().pop(0)
+        try:
+            self.get_poke_ts().pop(0)
+        except:
+            pass
         CmdWin.insert(1.0, "\nReceived ACK from {}".format(self.get_name()))
 
     def send_poke(self):
@@ -64,6 +67,7 @@ class User:
         CmdWin.insert(1.0, "\nHave sent a poke to {}".format(self.get_name()))
         ts = time.time()
         self.get_poke_ts().append(ts)
+        print("[debug] Pending poke to {} @ ({}, {})".format(self.get_name(), self.get_addr(), self.get_port()))
         print("[debug] Pending poke ts {}".format(self.get_poke_ts()))
         thread = threading.Thread(target=self.monitor_poke)
         thread.setDaemon(True)
@@ -78,7 +82,10 @@ class User:
             # if there are unresolved pokes and it has been >2.0sec since the oldest poke
             CmdWin.insert(1.0, "\nFailed to receive poke from {}".format(self.get_name()))
             # give up on receiving the ACK
-            self.get_poke_ts().pop(0)
+            try:
+                self.get_poke_ts().pop(0)
+            except:
+                pass
 
     def get_socket(self):
         return self.sck
@@ -212,7 +219,7 @@ class UserList:
 
         try:
             self.users.remove(user)
-        except e:
+        except:
             pass
 
     def acquire_lock(self):
@@ -781,7 +788,7 @@ def do_Send():
         CmdWin.insert(1.0, "\nPlease enter text.")
         return
     if not chatroom_name:
-        CmdWin.inset(1.0, "\nPlease join a chatroom first.")
+        CmdWin.insert(1.0, "\nPlease join a chatroom first.")
         return
     if not CONNECTED:
         CmdWin.insert(1.0, "\nPlease wait until you are properly connected with other peers.")

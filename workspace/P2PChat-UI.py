@@ -166,8 +166,9 @@ class User:
               .format(self.name, "Success" if fwd else "Failed"))
 
         if fwd:
-            CmdWin.insert(1.0, "\nYou are now connected to the chatroom.")
-            CONNECTED = True
+            if not CONNECTED:
+                CONNECTED = True
+                CmdWin.insert(1.0, "\nYou are now connected to the chatroom.")
             listen_message(self)
 
         self.fwd_bwd_semaphore.release()
@@ -186,7 +187,6 @@ class UserList:
     def __init__(self):
         self.lock = threading.Semaphore(1)
         self.users = []
-        self.fwd_count = 0  # at most one
         self.hash = -1
 
     def get_user_from_addr(self, addr, port):
@@ -209,6 +209,7 @@ class UserList:
     def remove(self, user):
         if user.sck:
             user.sck.close()
+
         try:
             self.users.remove(user)
         except e:
@@ -228,15 +229,17 @@ class UserList:
         return self.users[i]
 
     def declare_fwd(self, i, sck):  # at most one, return once success or fail
-        if self.fwd_count == 0:
-            if self.users[i].declare_fwd(sck):
-                self.fwd_count += 1
-                return True
+        if self.users[i].declare_fwd(sck):
+            return True
         return False
 
     @property
+    def fwd_count(self):
+        return reduce(lambda cnt, user: cnt + user.is_fwd(), self.users, 0)
+
+    @property
     def bwd_count(self):
-        return reduce(lambda cnt, user: cnt + user.is_bwd(), self.users)
+        return reduce(lambda cnt, user: cnt + user.is_bwd(), self.users, 0)
 
     def get_hash(self):
         return self.hash
@@ -476,6 +479,7 @@ def select_peer():
     while True:
 
         if user_list.fwd_count > 0:
+            print("[debug] Already have a neighbour, no need to update")
             time.sleep(10)
             continue
 
@@ -527,7 +531,6 @@ def select_peer():
             user_list.release_lock()
             time.sleep(10)
             continue
-        break
 
 
 #
@@ -563,7 +566,9 @@ def do_User():
 
     # insert check join condition here
 
-    if not validate_name(input_str):
+    if chatroom_name:
+        outstr = "\nYou cannot change your username after joining a chatroom!"
+    elif not validate_name(input_str):
         outstr = "\n\'{}\' is an invalid username!".format(input_str)
     else:
         outstr = "\n[User] username: " + input_str

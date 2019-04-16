@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="060ae150-d000-4fab-9cf6-e621421e1bc5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workspace/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/workspace/P2PChat-UI.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="221">
-              <caret line="740" column="30" selection-start-line="740" selection-start-column="30" selection-end-line="740" selection-end-column="30" />
+            <state relative-caret-position="243">
+              <caret line="569" column="77" selection-start-line="569" selection-start-column="77" selection-end-line="569" selection-end-column="77" />
             </state>
           </provider>
         </entry>
@@ -25,15 +26,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>str(me.hash)</find>
-      <find>self.msgID</find>
-      <find>msgID =</find>
-      <find>msgID</find>
-      <find>set_msgID(</find>
-      <find>do_send</find>
-      <find>.delete</find>
-      <find>userentry.delete</find>
-      <find>userentry</find>
       <find>msg[0]</find>
       <find>first</find>
       <find>if not CONNECTED</find>
@@ -46,7 +38,6 @@
       <find>peer</find>
       <find>close</find>
       <find>.close()</find>
-      <find>select_peer</find>
       <find>poke</find>
       <find>ACK</find>
       <find>set_msgId</find>
@@ -55,6 +46,16 @@
       <find>UDP_listener</find>
       <find>remove</find>
       <find>originHID</find>
+      <find>keep_alive</find>
+      <find>select_peer</find>
+      <find>user_list.fwd_count</find>
+      <find>user_list</find>
+      <find>update</find>
+      <find>rmv</find>
+      <find>bwd_count</find>
+      <find>fwd_count = 0</find>
+      <find>fwd_count</find>
+      <find>reduce</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -77,7 +78,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -94,6 +94,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -135,16 +136,18 @@
       <workItem from="1555395116814" duration="459000" />
       <workItem from="1555395830114" duration="291000" />
       <workItem from="1555396217654" duration="23000" />
+      <workItem from="1555400259467" duration="1153000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10629000" />
+    <option name="totallyTimeSpent" value="11782000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.06609808" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.06663113" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -184,8 +187,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="740" column="30" selection-start-line="740" selection-start-column="30" selection-end-line="740" selection-end-column="30" />
+        <state relative-caret-position="243">
+          <caret line="569" column="77" selection-start-line="569" selection-start-column="77" selection-end-line="569" selection-end-column="77" />
         </state>
       </provider>
     </entry>

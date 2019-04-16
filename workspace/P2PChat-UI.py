@@ -210,7 +210,10 @@ class UserList:
     def remove(self, user):
         if user.sck:
             user.sck.close()
-        self.users.remove(user)
+        try:
+            self.users.remove(user)
+        except e:
+            pass
 
     def acquire_lock(self):
         self.lock.acquire()
@@ -369,8 +372,19 @@ def update_members(instr):
 
     # Locking user list during updates
     user_list.acquire_lock()
+    hash_str = []
     for i in range(0, len(instr), 3):
         user_list.add_user(User(instr[i], instr[i + 1], instr[i + 2]))
+        hash_str.add(User(instr[i], instr[i+1], instr[i+2]).hash)
+
+    rmv_list = []
+    for user in user_list.users:
+        if user.hash not in hash_str:
+            rmv_list.append(user)
+
+    for user in rmv_list:
+        user_list.remove(user)
+
     user_list.release_lock()
 
 

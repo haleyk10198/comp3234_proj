@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="060ae150-d000-4fab-9cf6-e621421e1bc5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workspace/P2PChat-UI.py" beforeDir="false" afterPath="$PROJECT_DIR$/workspace/P2PChat-UI.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2708">
-              <caret line="761" column="22" lean-forward="true" selection-start-line="761" selection-start-column="22" selection-end-line="761" selection-end-column="22" />
+            <state relative-caret-position="495">
+              <caret line="385" column="30" selection-start-line="385" selection-start-column="30" selection-end-line="385" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -25,8 +26,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>set_addr</find>
-      <find>sdbm</find>
       <find>!=</find>
       <find>str(me.hash)</find>
       <find>self.msgID</find>
@@ -50,11 +49,13 @@
       <find>close</find>
       <find>.close()</find>
       <find>select_peer</find>
-      <find>CONNECTED</find>
       <find>poke</find>
       <find>ACK</find>
       <find>set_msgId</find>
       <find>set_msgID</find>
+      <find>CONNECTED</find>
+      <find>UDP_listener</find>
+      <find>remove</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -68,7 +69,7 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="953" />
+    <option name="x" value="-7" />
     <option name="width" value="974" />
     <option name="height" value="1047" />
   </component>
@@ -130,18 +131,19 @@
       <workItem from="1554729093871" duration="769000" />
       <workItem from="1554799075471" duration="1166000" />
       <workItem from="1555173975876" duration="480000" />
-      <workItem from="1555257150336" duration="401000" />
+      <workItem from="1555257150336" duration="700000" />
+      <workItem from="1555395116814" duration="301000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9557000" />
+    <option name="totallyTimeSpent" value="10157000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13059701" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.06503198" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -155,7 +157,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.329718" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.329718" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.329718" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -174,15 +176,15 @@
   <component name="editorHistoryManager">
     <entry file="file://$USER_HOME$/.PyCharm2018.3/system/python_stubs/-313451744/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="21">
-          <caret line="488" column="4" selection-start-line="488" selection-start-column="4" selection-end-line="488" selection-end-column="4" />
+        <state relative-caret-position="319">
+          <caret line="3669" column="11" lean-forward="true" selection-start-line="3669" selection-start-column="11" selection-end-line="3669" selection-end-column="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/workspace/P2PChat-UI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2708">
-          <caret line="761" column="22" lean-forward="true" selection-start-line="761" selection-start-column="22" selection-end-line="761" selection-end-column="22" />
+        <state relative-caret-position="495">
+          <caret line="385" column="30" selection-start-line="385" selection-start-column="30" selection-end-line="385" selection-end-column="30" />
         </state>
       </provider>
     </entry>
